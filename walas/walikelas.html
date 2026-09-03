@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wali Kelas - XI MIPA 2 - Portal Guru</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/absensi.css">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SheetJS CDN untuk Export Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',   
+                        primarySoft: '#EFF6FF',
+                        primaryDark: '#1D4ED8',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        bgSoft: '#F8FAFC',
+                        borderSoft: '#E2E8F0',
+                        textActive: '#0F172A',
+                        textMuted: '#64748B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- CSS Transisi Sembunyikan Sidebar & Auto Layout -->
+    <style>
+        #sidebarMenu, main {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-700 antialiased overflow-x-hidden font-sans">
+
+    <!-- TOPBAR -->
+    <header class="fixed top-0 w-full h-16 z-40 bg-white/95 border-b border-borderSoft backdrop-blur-sm shadow-sm">
+        <div class="h-full flex items-center justify-between px-3 sm:px-4 lg:px-8">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button id="hamburgerBtn" class="p-2 text-textMuted hover:text-primary transition-colors focus:outline-none rounded-lg hover:bg-bgSoft cursor-pointer">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                        <i class="fas fa-chalkboard-user text-sm sm:text-base"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-[13px] font-bold text-textActive tracking-normal leading-none">Absensi Sekolah</p>
+                        <p class="text-[11px] text-textMuted leading-tight mt-1">Portal Guru & Wali Kelas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center bg-bgSoft border border-borderSoft rounded-full px-4 py-1.5 w-72 lg:w-96 shadow-sm focus-within:border-primary transition-all">
+                <i class="fas fa-search text-slate-400 mr-3 text-xs"></i>
+                <input type="text" placeholder="Cari siswa, jadwal, atau berkas..." class="bg-transparent text-xs w-full focus:outline-none text-slate-600 placeholder-slate-400 tracking-normal">
+                <span class="text-[10px] text-slate-400 px-2 py-0.5 rounded-full border border-borderSoft bg-white font-mono">Ctrl+F</span>
+            </div>
+
+            <div class="flex items-center space-x-1 sm:space-x-3">
+                <button id="mobileSearchBtn" class="md:hidden p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none cursor-pointer">
+                    <i class="fas fa-search text-base"></i>
+                </button>
+
+                <!-- NOTIFIKASI DROPDOWN -->
+                <div class="relative">
+                    <button id="notifBtn" class="relative p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none cursor-pointer">
+                        <i class="far fa-bell text-base"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-3 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 overflow-hidden">
+                        <div class="p-3.5 border-b border-borderSoft flex items-center justify-between bg-bgSoft/50">
+                            <h4 class="text-xs font-bold text-textActive">Notifikasi Wali Kelas</h4>
+                            <span class="text-[9px] bg-red-50 text-danger px-2 py-0.5 rounded-full font-semibold border border-red-100">1 Warning</span>
+                        </div>
+                        <div class="p-2 space-y-1">
+                            <a href="walikelas.html" class="flex gap-3 p-3 rounded-xl hover:bg-bgSoft transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-red-50 text-danger flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                    <i class="fas fa-user-slash"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-textActive leading-snug truncate">Peringatan Siswa Bolos</p>
+                                    <p class="text-[11px] text-textMuted mt-1 leading-relaxed break-words">Rizky Febrian (XI MIPA 2) tidak hadir 3x bulan ini.</p>
+                                    <span class="text-[9px] text-slate-400 mt-1.5 block">Hari ini</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-6 w-[1px] bg-borderSoft hidden sm:block"></div>
+
+                <!-- PROFILE DROPDOWN -->
+                <div class="relative">
+                    <button id="profileBtn" class="flex items-center space-x-2 p-1 sm:p-1.5 rounded-full hover:bg-bgSoft transition-colors focus:outline-none cursor-pointer">
+                        <img src="https://ui-avatars.com/api/?name=Ahmad+Dahlan&background=2563EB&color=fff" alt="Profile Guru" class="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20">
+                        <div class="hidden md:block text-left pr-1">
+                            <p class="text-xs font-bold text-textActive leading-tight">Ahmad Dahlan, S.Kom</p>
+                            <p class="text-[10px] text-textMuted leading-tight mt-0.5">Guru & Wali Kelas XI MIPA 2</p>
+                        </div>
+                        <i class="fas fa-chevron-down text-[10px] text-textMuted hidden md:block pl-1"></i>
+                    </button>
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-52 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 p-1.5">
+                        <div class="px-3 py-2 border-b border-borderSoft mb-1 md:hidden">
+                            <p class="text-xs font-bold text-textActive truncate">Ahmad Dahlan, S.Kom</p>
+                            <p class="text-[10px] text-textMuted">Guru & Wali Kelas</p>
+                        </div>
+                        <a href="profil_saya.html" class="flex items-center px-3 py-2 text-xs text-textMuted hover:bg-bgSoft hover:text-textActive rounded-lg transition-colors font-medium">
+                            <i class="fas fa-id-badge w-4 mr-2.5 text-slate-400"></i> Profil Saya
+                        </a>
+                        <div class="my-1 border-t border-borderSoft"></div>
+                        <a href="login.html" class="flex items-center px-3 py-2 text-xs text-danger hover:bg-red-50 rounded-lg transition-colors font-semibold">
+                            <i class="fas fa-arrow-right-from-bracket w-4 mr-2.5"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH MOBILE MODAL -->
+        <div id="mobileSearchModal" class="fixed inset-0 bg-white z-50 p-4 hidden md:hidden flex-col">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="flex-1 flex items-center bg-bgSoft border border-borderSoft rounded-xl px-3.5 py-2.5 focus-within:border-primary transition-all">
+                    <i class="fas fa-search text-slate-400 mr-3 text-sm"></i>
+                    <input id="mobileSearchInput" type="text" placeholder="Cari siswa, jadwal, atau berkas..." class="bg-transparent text-sm w-full focus:outline-none text-slate-700 placeholder-slate-400">
+                </div>
+                <button id="closeSearchBtn" class="p-2 text-textMuted hover:text-danger text-sm font-semibold transition-colors shrink-0 cursor-pointer">Batal</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex pt-16">
+        <!-- SIDEBAR -->
+        <aside id="sidebarMenu" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white border-r border-borderSoft z-30 overflow-y-auto px-4 py-5 -translate-x-full lg:translate-x-0 shadow-lg lg:shadow-none custom-scrollbar">
+            <div class="flex items-center space-x-2.5 lg:hidden mb-5 pb-3 border-b border-borderSoft">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+                    <i class="fas fa-chalkboard-user text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-textActive truncate">Ahmad Dahlan, S.Kom</p>
+                    <p class="text-[10px] text-textMuted truncate">Wali Kelas XI MIPA 2</p>
+                </div>
+            </div>
+
+            <nav class="space-y-5">
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">PANEL GURU</p>
+                    <ul class="space-y-1.5">
+                        <li>
+                            <a href="index.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-chart-pie w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="jadwal_mengajar.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-calendar-check w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Jadwal Mengajar</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="walikelas.html" class="sidebar-item active flex items-center justify-between px-3 py-2.5 rounded-lg text-primary font-semibold text-sm tracking-normal transition-colors bg-primarySoft">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user-group w-5 text-center text-sm"></i>
+                                    <span class="ml-2.5">Wali Kelas</span>
+                                </div>
+                                <span class="bg-amber-100 text-amber-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border border-amber-200">XI MIPA 2</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="cuti_saya.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-file-signature w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Cuti & Izin Saya</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-4 border-t border-borderSoft">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">AKUN</p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="login.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-danger hover:bg-red-50 text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-arrow-right-from-bracket w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Log Out</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/40 z-20 hidden"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main id="mainContent" class="flex-1 w-full lg:ml-64 p-4 sm:p-6 lg:p-7 space-y-5 overflow-x-hidden">
+            
+            <!-- PANEL FILTER -->
+            <div class="bg-white p-4 rounded-2xl border border-borderSoft shadow-sm space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+                    
+                    <div class="lg:col-span-3">
+                        <label class="block text-[11px] font-bold text-textMuted mb-1">Filter Rekap Per Bulan</label>
+                        <select id="selectBulan" onchange="handleFilterChange('bulan')" class="w-full bg-slate-50 border border-borderSoft rounded-xl px-3 py-2 text-xs font-semibold text-textActive focus:outline-none focus:border-primary">
+                        </select>
+                    </div>
+
+                    <div class="lg:col-span-3">
+                        <label class="block text-[11px] font-bold text-textMuted mb-1">Filter Semester & T.A.</label>
+                        <select id="selectSemester" onchange="handleFilterChange('semester')" class="w-full bg-slate-50 border border-borderSoft rounded-xl px-3 py-2 text-xs font-semibold text-textActive focus:outline-none focus:border-primary">
+                        </select>
+                    </div>
+
+                    <div class="lg:col-span-6">
+                        <label class="block text-[11px] font-bold text-textMuted mb-1">Cari Nama Siswa / NISN</label>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchRekap" oninput="renderTableData()" placeholder="Ketik nama siswa atau NISN..." class="w-full bg-slate-50 border border-borderSoft rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-primary">
+                        </div>
+                    </div>
+
+                    <div id="customDateContainer" class="hidden lg:col-span-12 grid grid-cols-2 gap-3 pt-2 border-t border-borderSoft">
+                        <div>
+                            <label class="block text-[10px] font-bold text-textMuted mb-1">Dari Tanggal</label>
+                            <input type="date" id="startDate" onchange="renderTableData()" class="w-full bg-slate-50 border border-borderSoft rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-textMuted mb-1">Sampai Tanggal</label>
+                            <input type="date" id="endDate" onchange="renderTableData()" class="w-full bg-slate-50 border border-borderSoft rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-primary">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- CARD UTAMA -->
+            <div class="bg-white rounded-2xl border border-borderSoft shadow-sm overflow-hidden p-5 sm:p-6 space-y-5">
+                
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-borderSoft pb-5">
+                    <div>
+                        <h1 class="text-base sm:text-lg font-extrabold text-textActive">Rekap Kehadiran Siswa - XI MIPA 2</h1>
+                    </div>
+                    <div class="flex items-center flex-wrap gap-2">
+                        <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3.5 rounded-full text-xs shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                        <button onclick="window.print()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 px-3.5 rounded-full text-xs shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer">
+                            <i class="fas fa-file-pdf"></i> Cetak PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TABEL REKAPITULASI -->
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table id="rekapTable" class="w-full text-left text-xs min-w-[750px]">
+                        <thead>
+                            <tr class="border-b border-borderSoft text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                                <th class="py-3 px-3 text-center w-12">NO</th>
+                                <th class="py-3 px-3">NISN</th>
+                                <th class="py-3 px-3">NAMA SISWA</th>
+                                <th class="py-3 px-3 text-center text-emerald-600">HADIR (H)</th>
+                                <th class="py-3 px-3 text-center text-blue-600">SAKIT (S)</th>
+                                <th class="py-3 px-3 text-center text-amber-500">IZIN (I)</th>
+                                <th class="py-3 px-3 text-center text-red-500">ALPHA (A)</th>
+                                <th class="py-3 px-3 text-center">% KEHADIRAN</th>
+                                <th class="py-3 px-3 text-center">STATUS & AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rekapTableBody" class="divide-y divide-slate-100 font-semibold text-slate-700">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CARD HIGHLIGHT RADAR PERHATIAN KHUSUS -->
+            <div class="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-5 space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                        <i class="fas fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-extrabold text-amber-900 tracking-wide uppercase">PERHATIAN KHUSUS (SISWA ALPHA TINGGI)</h3>
+                        <p class="text-[11px] text-amber-700 font-medium mt-0.5">Siswa dengan persentase kehadiran &lt; 80% atau akumulasi Alpha &ge; 3 kali pada kelas ini.</p>
+                    </div>
+                </div>
+
+                <div id="radarCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL DATA PRIBADI & KONTAK ORTU -->
+    <div id="modalKontakOrtu" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative space-y-5 transform transition-all duration-200 scale-95 opacity-0" id="modalContent">
+            
+            <div class="flex items-start justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 text-primary flex items-center justify-center font-bold text-sm">
+                        <i class="fas fa-address-card"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-800">Data Pribadi & Kontak Ortu</h3>
+                        <p class="text-[11px] text-slate-400 font-medium">Informasi detail untuk koordinasi kehadiran siswa.</p>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1 transition-colors cursor-pointer">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+
+            <div class="bg-slate-50/70 border border-slate-200/60 rounded-2xl p-4 flex items-center space-x-4">
+                <div id="modalAvatar" class="w-14 h-14 rounded-2xl bg-red-500 text-white font-extrabold text-lg flex items-center justify-center shrink-0 shadow-sm">
+                    BS
+                </div>
+                <div class="space-y-1">
+                    <h4 id="modalNamaSiswa" class="text-sm font-bold text-slate-800 leading-none">Budi Setiawan</h4>
+                    <p class="text-[11px] text-slate-400 font-mono">NISN: <span id="modalNisn">0051234002</span></p>
+                    <div class="flex items-center gap-1.5 pt-1">
+                        <span id="modalKelas" class="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md">XI MIPA 2</span>
+                        <span id="modalStatusBadge" class="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-md">High Alpha (4 Kali)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50/70 border border-slate-200/60 rounded-2xl p-3.5 space-y-1">
+                        <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">NAMA WALI / ORTU</p>
+                        <p id="modalNamaOrtu" class="text-xs font-bold text-slate-800">Bpk. Santoso Setiawan</p>
+                    </div>
+                    <div class="bg-slate-50/70 border border-slate-200/60 rounded-2xl p-3.5 space-y-1">
+                        <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">HUBUNGAN WALI</p>
+                        <p id="modalHubunganWali" class="text-xs font-bold text-slate-800">Orang Tua Kandung</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50/70 border border-slate-200/60 rounded-2xl p-3.5 space-y-1">
+                    <p class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">ALAMAT RUMAH</p>
+                    <p id="modalAlamat" class="text-xs font-bold text-slate-800">Jl. Melati No. 45, Jakarta</p>
+                </div>
+            </div>
+
+            <div class="bg-red-50/50 border border-red-100 rounded-2xl p-4 space-y-2">
+                <p class="text-[10px] font-bold uppercase text-red-600 tracking-wider flex items-center gap-1.5">
+                    <i class="fas fa-rotate-left"></i> CATATAN KETIDAKHADIRAN TERAKHIR:
+                </p>
+                <ul id="modalAlphaList" class="text-xs font-semibold text-red-600/90 space-y-1 pl-1">
+                </ul>
+            </div>
+
+            <a id="modalWaBtn" href="#" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99]">
+                <i class="fab fa-whatsapp text-base"></i> Hubungi Orang Tua via WhatsApp
+            </a>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT MANDIRI TOGGLE LAYOUT (MENCEGAH NGGAK BISA DIPENCET) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+
+            const notifBtn = document.getElementById('notifBtn');
+            const notifDropdown = document.getElementById('notifDropdown');
+
+            const profileBtn = document.getElementById('profileBtn');
+            const profileDropdown = document.getElementById('profileDropdown');
+
+            const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+            const mobileSearchModal = document.getElementById('mobileSearchModal');
+            const closeSearchBtn = document.getElementById('closeSearchBtn');
+
+            // 1. Toggle Sidebar & Overlay
+            if (hamburgerBtn && sidebarMenu) {
+                hamburgerBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (window.innerWidth >= 1024) {
+                        // Desktop Toggle
+                        document.body.classList.toggle('sidebar-collapsed');
+                    } else {
+                        // Mobile Toggle
+                        sidebarMenu.classList.toggle('-translate-x-full');
+                        if (sidebarOverlay) sidebarOverlay.classList.toggle('hidden');
+                    }
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    sidebarMenu.classList.add('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                });
+            }
+
+            // 2. Toggle Notifikasi Dropdown
+            if (notifBtn && notifDropdown) {
+                notifBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (profileDropdown) profileDropdown.classList.add('hidden');
+                    notifDropdown.classList.toggle('hidden');
+                });
+            }
+
+            // 3. Toggle Profile Dropdown
+            if (profileBtn && profileDropdown) {
+                profileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (notifDropdown) notifDropdown.classList.add('hidden');
+                    profileDropdown.classList.toggle('hidden');
+                });
+            }
+
+            // 4. Toggle Search Mobile
+            if (mobileSearchBtn && mobileSearchModal) {
+                mobileSearchBtn.addEventListener('click', () => {
+                    mobileSearchModal.classList.remove('hidden');
+                    mobileSearchModal.classList.add('flex');
+                });
+            }
+
+            if (closeSearchBtn && mobileSearchModal) {
+                closeSearchBtn.addEventListener('click', () => {
+                    mobileSearchModal.classList.add('hidden');
+                    mobileSearchModal.classList.remove('flex');
+                });
+            }
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (notifDropdown && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+                    notifDropdown.classList.add('hidden');
+                }
+                if (profileDropdown && !profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+                    profileDropdown.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+
+    <!-- SCRIPT DATA & TABLE WALI KELAS -->
+    <script>
+        const studentData = [
+            { 
+                nisn: '0051234001', 
+                name: 'Andi Pratama', 
+                hadir: 18, sakit: 1, izin: 0, alpha: 0, 
+                ortu: 'Bpk. Pratama', 
+                hubungan: 'Orang Tua Kandung',
+                noHp: '6281234567890',
+                alamat: 'Jl. Mawar No. 12, Jakarta',
+                avatarBg: 'bg-blue-600',
+                historyAlpha: []
+            },
+            { 
+                nisn: '0051234002', 
+                name: 'Budi Setiawan', 
+                hadir: 12, sakit: 2, izin: 1, alpha: 4, 
+                ortu: 'Bpk. Santoso Setiawan', 
+                hubungan: 'Orang Tua Kandung',
+                noHp: '6281234567891',
+                alamat: 'Jl. Melati No. 45, Jakarta',
+                avatarBg: 'bg-red-500',
+                historyAlpha: ['05 Feb: Alpha', '14 Feb: Alpha', '20 Feb: Alpha', '22 Feb: Alpha']
+            },
+            { 
+                nisn: '0051234003', 
+                name: 'Citra Dewi', 
+                hadir: 19, sakit: 0, izin: 0, alpha: 0, 
+                ortu: 'Ibu Citra', 
+                hubungan: 'Orang Tua Kandung',
+                noHp: '6281234567892',
+                alamat: 'Jl. Anggrek No. 8, Jakarta',
+                avatarBg: 'bg-emerald-500',
+                historyAlpha: []
+            },
+            { 
+                nisn: '0051234004', 
+                name: 'Deni Kurniawan', 
+                hadir: 13, sakit: 1, izin: 2, alpha: 3, 
+                ortu: 'Bpk. Agus Kurniawan', 
+                hubungan: 'Orang Tua Kandung',
+                noHp: '6281234567893',
+                alamat: 'Jl. Dahsyat No. 99, Jakarta',
+                avatarBg: 'bg-amber-500',
+                historyAlpha: ['10 Feb: Alpha', '15 Feb: Alpha', '18 Feb: Alpha']
+            },
+            { 
+                nisn: '0051234005', 
+                name: 'Eka Rahmawati', 
+                hadir: 20, sakit: 0, izin: 0, alpha: 0, 
+                ortu: 'Ibu Rahma', 
+                hubungan: 'Orang Tua Kandung',
+                noHp: '6281234567894',
+                alamat: 'Jl. Kenanga No. 3, Jakarta',
+                avatarBg: 'bg-purple-600',
+                historyAlpha: []
+            }
+        ];
+
+        const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initAutoFilters();
+            renderTableData();
+        });
+
+        function initAutoFilters() {
+            const now = new Date();
+            const currYear = now.getFullYear();
+            const currMonth = now.getMonth(); 
+
+            const selectBulan = document.getElementById('selectBulan');
+            if(!selectBulan) return;
+            selectBulan.innerHTML = '';
+
+            const startMonth = 4;
+            
+            for (let m = startMonth; m <= currMonth; m++) {
+                const opt = document.createElement('option');
+                opt.value = `bulan_${m}_${currYear}`;
+                opt.textContent = `${monthNames[m]} ${currYear}`;
+                if (m === currMonth) opt.selected = true; 
+                selectBulan.appendChild(opt);
+            }
+
+            const customOpt = document.createElement('option');
+            customOpt.value = 'custom';
+            customOpt.textContent = 'Custom Rentang Tanggal';
+            selectBulan.appendChild(customOpt);
+
+            const selectSemester = document.getElementById('selectSemester');
+            let semGanjilTA = `${currYear}/${currYear + 1}`;
+            let semGenapTA = `${currYear - 1}/${currYear}`;
+
+            if (currMonth < 6) { 
+                semGanjilTA = `${currYear - 1}/${currYear}`;
+                semGenapTA = `${currYear - 1}/${currYear}`;
+            }
+
+            selectSemester.innerHTML = `
+                <option value="none" selected>-- Pilih Semester (Opsional) --</option>
+                <option value="sem_ganjil">Semester Ganjil (${semGanjilTA})</option>
+                <option value="sem_genap">Semester Genap (${semGenapTA})</option>
+            `;
+        }
+
+        function handleFilterChange(changedSource) {
+            const selectBulan = document.getElementById('selectBulan');
+            const selectSemester = document.getElementById('selectSemester');
+            const customContainer = document.getElementById('customDateContainer');
+
+            if (changedSource === 'bulan') {
+                if (selectBulan.value !== 'custom') {
+                    selectSemester.value = 'none';
+                    customContainer.classList.add('hidden');
+                } else {
+                    customContainer.classList.remove('hidden');
+                }
+            } else if (changedSource === 'semester') {
+                if (selectSemester.value !== 'none') {
+                    selectBulan.selectedIndex = 0; 
+                    customContainer.classList.add('hidden');
+                }
+            }
+
+            renderTableData();
+        }
+
+        function renderTableData() {
+            const tbody = document.getElementById('rekapTableBody');
+            const radarContainer = document.getElementById('radarCardsContainer');
+            const searchInput = document.getElementById('searchRekap');
+            const searchQuery = searchInput ? searchInput.value.toLowerCase() : '';
+
+            if(!tbody || !radarContainer) return;
+
+            tbody.innerHTML = '';
+            radarContainer.innerHTML = '';
+
+            const filteredData = studentData.filter(s => 
+                s.name.toLowerCase().includes(searchQuery) || s.nisn.includes(searchQuery)
+            );
+
+            filteredData.forEach((s, idx) => {
+                const totalDays = s.hadir + s.sakit + s.izin + s.alpha;
+                const percentage = Math.round((s.hadir / totalDays) * 100);
+                const isProblematic = percentage < 80 || s.alpha >= 3;
+
+                const initials = s.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-3 text-center text-slate-400 font-bold">${idx + 1}</td>
+                    <td class="py-3 px-3 font-mono font-normal text-slate-500 text-[11px]">${s.nisn}</td>
+                    <td class="py-3 px-3 font-extrabold text-slate-800 flex items-center space-x-2.5">
+                        <span class="w-7 h-7 rounded-full ${s.avatarBg} text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                            ${initials}
+                        </span>
+                        <span>${s.name}</span>
+                    </td>
+                    <td class="py-3 px-3 text-center font-bold text-emerald-600">${s.hadir}</td>
+                    <td class="py-3 px-3 text-center font-bold text-slate-600">${s.sakit}</td>
+                    <td class="py-3 px-3 text-center font-bold text-slate-600">${s.izin}</td>
+                    <td class="py-3 px-3 text-center font-bold ${s.alpha > 0 ? 'text-red-500' : 'text-slate-600'}">${s.alpha}</td>
+                    <td class="py-3 px-3 text-center font-extrabold ${isProblematic ? 'text-red-500' : 'text-emerald-600'}">${percentage}%</td>
+                    <td class="py-3 px-3 text-center">
+                        ${isProblematic ? `
+                            <button onclick="openModal('${s.nisn}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[11px] font-bold px-3 py-1 rounded-full inline-flex items-center gap-1 transition-colors cursor-pointer">
+                                <i class="fas fa-triangle-exclamation text-[10px]"></i> Warning & Ortu
+                            </button>
+                        ` : `
+                            <button onclick="openModal('${s.nisn}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-[11px] font-bold px-3 py-1 rounded-full inline-flex items-center gap-1 transition-colors cursor-pointer">
+                                <i class="fas fa-user text-[10px]"></i> Detail Data
+                            </button>
+                        `}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                if (isProblematic) {
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between";
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg ${s.avatarBg} text-white font-extrabold flex items-center justify-center text-xs shrink-0">
+                                ${initials}
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800">${s.name}</h4>
+                                <p class="text-[10px] text-red-500 font-bold mt-0.5">Alpha: ${s.alpha}x | Kehadiran: ${percentage}%</p>
+                                <p class="text-[10px] text-slate-400">Orang Tua: ${s.ortu}</p>
+                            </div>
+                        </div>
+                        <button onclick="openModal('${s.nisn}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer">
+                            <i class="fas fa-phone text-[10px]"></i> Kontak
+                        </button>
+                    `;
+                    radarContainer.appendChild(card);
+                }
+            });
+        }
+
+        function openModal(nisn) {
+            const student = studentData.find(s => s.nisn === nisn);
+            if (!student) return;
+
+            const initials = student.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+            
+            document.getElementById('modalAvatar').className = `w-14 h-14 rounded-2xl ${student.avatarBg} text-white font-extrabold text-lg flex items-center justify-center shrink-0 shadow-sm`;
+            document.getElementById('modalAvatar').textContent = initials;
+            document.getElementById('modalNamaSiswa').textContent = student.name;
+            document.getElementById('modalNisn').textContent = student.nisn;
+            
+            const badge = document.getElementById('modalStatusBadge');
+            if (student.alpha >= 3) {
+                badge.className = "text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded-md";
+                badge.textContent = `High Alpha (${student.alpha} Kali)`;
+            } else if (student.alpha > 0) {
+                badge.className = "text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md";
+                badge.textContent = `Alpha (${student.alpha} Kali)`;
+            } else {
+                badge.className = "text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md";
+                badge.textContent = `Aman`;
+            }
+
+            document.getElementById('modalNamaOrtu').textContent = student.ortu;
+            document.getElementById('modalHubunganWali').textContent = student.hubungan;
+            document.getElementById('modalAlamat').textContent = student.alamat;
+
+            const alphaList = document.getElementById('modalAlphaList');
+            alphaList.innerHTML = '';
+            if (student.historyAlpha.length > 0) {
+                student.historyAlpha.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `• ${item}`;
+                    alphaList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.className = "text-emerald-600 font-normal";
+                li.textContent = "• Tidak ada catatan alpha.";
+                alphaList.appendChild(li);
+            }
+
+            const pesanWa = encodeURIComponent(`Halo ${student.ortu}, saya Wali Kelas dari ${student.name} (XI MIPA 2). Saya ingin mengonfirmasi terkait kehadiran ananda...`);
+            document.getElementById('modalWaBtn').href = `https://wa.me/${student.noHp}?text=${pesanWa}`;
+
+            const modal = document.getElementById('modalKontakOrtu');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modalKontakOrtu');
+            const content = document.getElementById('modalContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function exportToExcel() {
+            const table = document.getElementById("rekapTable");
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Rekap Kehadiran" });
+            XLSX.writeFile(wb, `Rekap_Kehadiran_XI_MIPA_2.xlsx`);
+        }
+    </script>
+</body>
+</html>

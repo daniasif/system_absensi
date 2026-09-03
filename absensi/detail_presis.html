@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Presensi Kelas - Absensi Sekolah</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB', primarySoft: '#EFF6FF', primaryDark: '#1D4ED8',
+                        success: '#16A34A', warning: '#F59E0B', danger: '#DC2626',
+                        bgSoft: '#F8FAFC', borderSoft: '#E2E8F0', textActive: '#0F172A', textMuted: '#64748B',
+                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-bgSoft text-slate-700 antialiased overflow-x-hidden">
+
+    <!-- TOPBAR -->
+    <header class="fixed top-0 w-full h-auto min-h-[64px] z-40 bg-white border-b border-borderSoft py-2 px-3 sm:px-4 lg:px-8">
+        <div class="h-full flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <a href="presensi_siswa.html" class="p-2 text-textMuted hover:text-primary transition-colors rounded-lg hover:bg-bgSoft shrink-0">
+                    <i class="fas fa-arrow-left text-lg"></i>
+                </a>
+                <div class="min-w-0 flex-1">
+                    <h2 id="txtJudulSesiAktif" class="text-xs sm:text-sm font-bold text-textActive truncate">Presensi Siswa: -</h2>
+                    <p id="txtSubJudulSesi" class="text-[10px] sm:text-[11px] text-textMuted truncate">Mata Pelajaran: -</p>
+                </div>
+            </div>
+            
+            <!-- Tab Switcher -->
+            <div class="flex items-center bg-bgSoft p-1 rounded-xl border border-borderSoft self-center sm:self-auto w-full sm:w-auto justify-center">
+                <button id="tabModeManual" class="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold rounded-lg bg-white text-primary shadow-sm transition-all text-center whitespace-nowrap">
+                    <i class="fas fa-list-check mr-1"></i> Presensi Manual
+                </button>
+                <button id="tabModeQR" class="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg text-textMuted hover:text-textActive transition-all text-center whitespace-nowrap">
+                    <i class="fas fa-qrcode mr-1"></i> Display QR Code Live
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="pt-32 sm:pt-24 px-3 sm:px-4 lg:px-8 max-w-7xl mx-auto space-y-6 pb-12">
+        
+        <!-- MODE MANUAL: TABEL FULL WIDTH -->
+        <div id="containerManual" class="bg-white p-3 sm:p-6 rounded-2xl border border-borderSoft shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-3 border-b border-borderSoft">
+                <div class="flex items-center justify-between sm:justify-start gap-3">
+                    <button id="setHadirSemua" class="px-3.5 py-2 bg-emerald-50 text-success border border-emerald-200 text-xs font-semibold rounded-xl hover:bg-emerald-100 transition-colors whitespace-nowrap">
+                        <i class="fas fa-check-double mr-1"></i> Set Semua Hadir
+                    </button>
+                    <span class="text-xs text-textMuted whitespace-nowrap">Total: <strong id="totalSiswaCount" class="text-textActive">0</strong> Siswa</span>
+                </div>
+                <div class="relative w-full sm:w-72">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchSiswa" placeholder="Cari nama atau NISN..." class="w-full bg-bgSoft border border-borderSoft rounded-xl pl-8 pr-3 py-2 sm:py-1.5 text-xs focus:outline-none focus:border-primary">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-borderSoft -mx-1 sm:mx-0">
+                <table class="w-full text-left border-collapse text-xs min-w-[600px]">
+                    <thead>
+                        <tr class="bg-bgSoft text-textMuted uppercase font-extrabold tracking-wider border-b border-borderSoft">
+                            <th class="p-3 w-12 text-center">NO</th>
+                            <th class="p-3">NAMA SISWA</th>
+                            <th class="p-3">NIS / NISN</th>
+                            <th class="p-3">KELAS</th>
+                            <th class="p-3 text-center">STATUS KEHADIRAN</th>
+                            <th class="p-3">CATATAN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelSiswaBody" class="divide-y divide-borderSoft">
+                        <!-- Injected JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 pt-3">
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-xs w-full sm:w-auto text-center sm:text-left">
+                    <span class="bg-bgSoft sm:bg-transparent p-2 sm:p-0 rounded-lg border sm:border-0 border-borderSoft"><span class="w-2.5 h-2.5 inline-block rounded-full bg-success"></span> Hadir: <strong id="cntHadir">0</strong></span>
+                    <span class="bg-bgSoft sm:bg-transparent p-2 sm:p-0 rounded-lg border sm:border-0 border-borderSoft"><span class="w-2.5 h-2.5 inline-block rounded-full bg-warning"></span> Sakit: <strong id="cntSakit">0</strong></span>
+                    <span class="bg-bgSoft sm:bg-transparent p-2 sm:p-0 rounded-lg border sm:border-0 border-borderSoft"><span class="w-2.5 h-2.5 inline-block rounded-full bg-primary"></span> Izin: <strong id="cntIzin">0</strong></span>
+                    <span class="bg-bgSoft sm:bg-transparent p-2 sm:p-0 rounded-lg border sm:border-0 border-borderSoft"><span class="w-2.5 h-2.5 inline-block rounded-full bg-danger"></span> Alpha: <strong id="cntAlpha">0</strong></span>
+                </div>
+                <button id="simpanPresensiManual" class="w-full sm:w-auto px-6 py-2.5 bg-success hover:bg-green-700 text-white rounded-xl text-xs font-bold shadow-md shadow-green-500/20 flex items-center justify-center gap-2 transition-all">
+                    <i class="fas fa-save"></i> Simpan Data Presensi
+                </button>
+            </div>
+        </div>
+
+        <!-- MODE DISPLAY QR LIVE -->
+        <div id="containerQR" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-5 flex flex-col items-center justify-center p-5 sm:p-8 bg-slate-900 text-white rounded-2xl text-center space-y-4 shadow-xl">
+                <span class="px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-400/30 rounded-full text-[10px] font-mono uppercase font-bold">
+                    Scan Live QR Code
+                </span>
+                <h4 id="txtQRSubHeader" class="text-sm font-bold text-white">Scan untuk Presensi Kelas</h4>
+                <p class="text-xs text-slate-400">Token refresh otomatis dalam <span id="qrTimer" class="text-amber-400 font-bold">15</span> detik</p>
+                <div class="p-3 sm:p-4 bg-white rounded-2xl shadow-2xl max-w-[200px] sm:max-w-none w-full flex justify-center">
+                    <div id="qrcodeCanvas" class="flex justify-center max-w-full overflow-hidden"></div>
+                </div>
+                <div class="w-full space-y-2 pt-2">
+                    <p class="text-[11px] text-slate-400 font-mono">Token: <span id="txtTokenHash" class="text-emerald-400 break-all">#PRES-829182</span></p>
+                    <button id="btnRefreshQR" class="w-full py-2 bg-slate-800 text-slate-200 hover:text-white border border-slate-700 rounded-xl text-xs font-bold transition-all">
+                        <i class="fas fa-rotate mr-1"></i> Refresh Token QR
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 border border-borderSoft rounded-2xl p-3 sm:p-5 space-y-3 bg-white">
+                <h4 class="text-xs font-bold text-textActive flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span> Live Log Scan Siswa Real-Time
+                </h4>
+                <div class="overflow-y-auto max-h-[380px] rounded-xl border border-borderSoft bg-bgSoft/50 overflow-x-auto -mx-1 sm:mx-0">
+                    <table class="w-full text-left border-collapse text-xs min-w-[450px]">
+                        <thead>
+                            <tr class="bg-white text-textMuted uppercase font-extrabold border-b border-borderSoft">
+                                <th class="p-3">WAKTU</th>
+                                <th class="p-3">NAMA SISWA</th>
+                                <th class="p-3">NISN</th>
+                                <th class="p-3 text-center">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelLiveScanBody" class="divide-y divide-borderSoft">
+                            <!-- Injected JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toastContainer" class="fixed top-20 right-3 sm:right-5 z-50 flex flex-col space-y-3 pointer-events-none max-w-[calc(100vw-24px)]"></div>
+
+    <!-- SCRIPT -->
+    <script src="../assets/js/layout.js"></script>
+    <script src="../assets/js/detail_presis.js"></script>
+</body>
+</html>

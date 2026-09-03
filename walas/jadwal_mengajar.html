@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jadwal Mengajar - Absensi Sekolah</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/absensi.css">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',   
+                        primarySoft: '#EFF6FF',
+                        primaryDark: '#1D4ED8',
+                        success: '#16A34A',
+                        warning: '#F59E0B',
+                        danger: '#DC2626',
+                        bgSoft: '#F8FAFC',
+                        borderSoft: '#E2E8F0',
+                        textActive: '#0F172A',
+                        textMuted: '#64748B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <style>
+        #sidebarMenu, main {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media (min-width: 1024px) {
+            body.sidebar-collapsed #sidebarMenu { transform: translateX(-100%); }
+            body.sidebar-collapsed main { margin-left: 0 !important; }
+        }
+    </style>
+</head>
+
+<body class="bg-bgSoft text-slate-700 antialiased overflow-x-hidden min-h-screen flex flex-col">
+
+    <!-- TOPBAR -->
+    <header class="fixed top-0 w-full h-16 z-40 bg-white/95 border-b border-borderSoft backdrop-blur-sm">
+        <div class="h-full flex items-center justify-between px-3 sm:px-4 lg:px-8">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button id="hamburgerBtn" class="p-2 text-textMuted hover:text-primary transition-colors focus:outline-none rounded-lg hover:bg-bgSoft">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <a href="#" class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                        <i class="fas fa-chalkboard-user text-sm sm:text-base"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-[13px] font-bold text-textActive leading-none">Absensi Sekolah</p>
+                        <p class="text-[11px] text-textMuted leading-tight mt-1">Portal Guru & Wali Kelas</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Search Input (Desktop) -->
+            <div class="hidden md:flex items-center bg-bgSoft border border-borderSoft rounded-full px-4 py-1.5 w-72 lg:w-96 shadow-sm focus-within:border-primary transition-all">
+                <i class="fas fa-search text-slate-400 mr-3 text-xs"></i>
+                <input type="text" id="topSearchInput" placeholder="Cari siswa, jadwal, atau berkas..." class="bg-transparent text-xs w-full focus:outline-none text-slate-600 placeholder-slate-400">
+                <span class="text-[10px] text-slate-400 px-2 py-0.5 rounded-full border border-borderSoft bg-white font-mono">Ctrl+F</span>
+            </div>
+
+            <div class="flex items-center space-x-1 sm:space-x-3">
+                <button id="mobileSearchBtn" class="md:hidden p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none">
+                    <i class="fas fa-search text-base"></i>
+                </button>
+
+                <!-- Notifikasi -->
+                <div class="relative">
+                    <button id="notifBtn" class="relative p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none">
+                        <i class="far fa-bell text-base"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-3 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 overflow-hidden">
+                        <div class="p-3.5 border-b border-borderSoft flex items-center justify-between bg-bgSoft/50">
+                            <h4 class="text-xs font-bold text-textActive">Notifikasi Wali Kelas</h4>
+                            <span class="text-[9px] bg-red-50 text-danger px-2 py-0.5 rounded-full font-semibold border border-red-100">1 Warning</span>
+                        </div>
+                        <div class="p-2 space-y-1">
+                            <a href="walikelas.html" class="flex gap-3 p-3 rounded-xl hover:bg-bgSoft transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-red-50 text-danger flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                    <i class="fas fa-user-slash"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-textActive truncate">Peringatan Siswa Bolos</p>
+                                    <p class="text-[11px] text-textMuted mt-1 leading-relaxed">Rizky Febrian (XI MIPA 2) tidak hadir 3x bulan ini.</p>
+                                    <span class="text-[9px] text-slate-400 mt-1.5 block">Hari ini</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-6 w-[1px] bg-borderSoft hidden sm:block"></div>
+
+                <!-- Profile Guru -->
+                <div class="relative">
+                    <button id="profileBtn" class="flex items-center space-x-2 p-1 sm:p-1.5 rounded-full hover:bg-bgSoft transition-colors focus:outline-none">
+                        <img src="https://ui-avatars.com/api/?name=Ahmad+Dahlan&background=2563EB&color=fff" alt="Profile Guru" class="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20">
+                        <div class="hidden md:block text-left pr-1">
+                            <p class="text-xs font-bold text-textActive leading-tight">Ahmad Dahlan, S.Kom</p>
+                            <p class="text-[10px] text-textMuted leading-tight mt-0.5">Guru & Wali Kelas XI MIPA 2</p>
+                        </div>
+                        <i class="fas fa-chevron-down text-[10px] text-textMuted hidden md:block pl-1"></i>
+                    </button>
+
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-52 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 p-1.5">
+                        <div class="px-3 py-2 border-b border-borderSoft mb-1 md:hidden">
+                            <p class="text-xs font-bold text-textActive truncate">Ahmad Dahlan, S.Kom</p>
+                            <p class="text-[10px] text-textMuted">Guru & Wali Kelas</p>
+                        </div>
+                        <a href="profil_saya.html" class="flex items-center px-3 py-2 text-xs text-textMuted hover:bg-bgSoft hover:text-textActive rounded-lg transition-colors font-medium">
+                            <i class="fas fa-id-badge w-4 mr-2.5 text-slate-400"></i> Profil Saya
+                        </a>
+                        <div class="my-1 border-t border-borderSoft"></div>
+                        <a href="../login.html" class="flex items-center px-3 py-2 text-xs text-danger hover:bg-red-50 rounded-lg transition-colors font-semibold">
+                            <i class="fas fa-arrow-right-from-bracket w-4 mr-2.5"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH OVERLAY (Mobile) -->
+        <div id="mobileSearchModal" class="fixed inset-0 bg-white z-50 p-4 hidden md:hidden flex-col">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="flex-1 flex items-center bg-bgSoft border border-borderSoft rounded-xl px-3.5 py-2.5">
+                    <i class="fas fa-search text-slate-400 mr-3 text-sm"></i>
+                    <input id="mobileSearchInput" type="text" placeholder="Cari siswa, jadwal, atau berkas..." class="bg-transparent text-sm w-full focus:outline-none">
+                </div>
+                <button id="closeSearchBtn" class="p-2 text-textMuted hover:text-danger text-sm font-semibold">Batal</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex pt-16 min-h-screen">
+        <!-- SIDEBAR GURU -->
+        <aside id="sidebarMenu" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white border-r border-borderSoft z-30 overflow-y-auto px-4 py-5 -translate-x-full lg:translate-x-0 shadow-lg lg:shadow-none shrink-0">
+            <div class="flex items-center space-x-2.5 lg:hidden mb-5 pb-3 border-b border-borderSoft">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+                    <i class="fas fa-chalkboard-user text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-textActive truncate">Ahmad Dahlan, S.Kom</p>
+                    <p class="text-[10px] text-textMuted truncate">Wali Kelas XI MIPA 2</p>
+                </div>
+            </div>
+
+            <nav class="space-y-5">
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">PANEL GURU</p>
+                    <ul class="space-y-1.5">
+                        <li>
+                            <a href="index.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm font-medium">
+                                <i class="fas fa-chart-pie w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="jadwal_mengajar.html" class="sidebar-item active flex items-center px-3 py-2.5 rounded-lg text-primary font-semibold text-sm bg-primarySoft">
+                                <i class="fas fa-calendar-check w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Jadwal Mengajar</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="walikelas.html" class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm font-medium">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user-group w-5 text-center text-sm"></i>
+                                    <span class="ml-2.5">Wali Kelas</span>
+                                </div>
+                                <span class="bg-amber-100 text-amber-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border border-amber-200">XI MIPA 2</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="cuti_saya.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm font-medium">
+                                <i class="fas fa-file-signature w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Cuti & Izin Saya</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-4 border-t border-borderSoft">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">AKUN</p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="../login.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-danger hover:bg-red-50 text-sm font-medium">
+                                <i class="fas fa-arrow-right-from-bracket w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Log Out</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/40 z-20 hidden lg:hidden"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 w-full lg:ml-64 p-3 sm:p-5 lg:p-8 min-h-[calc(100vh-64px)] space-y-6 overflow-x-hidden">
+            
+            <!-- SECTION 1: MATRIKS JADWAL MENGAJAR GURU (ATAS) -->
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-borderSoft shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-borderSoft pb-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[10px] font-bold flex items-center">
+                                <i class="fas fa-check-circle mr-1"></i> Status Bentrok: Aman (0 Bentrok)
+                            </span>
+                        </div>
+                        <h2 class="text-base font-bold text-textActive mt-2 flex items-center">
+                            <i class="fas fa-calendar-days text-primary mr-2"></i> REKAP JADWAL MENGAJAR GURU
+                        </h2>
+                        <p class="text-xs text-textMuted">Jadwal mingguan pengajaran atas nama Pak Ahmad Dahlan, S.Kom</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select class="bg-bgSoft border border-borderSoft rounded-xl px-3 py-1.5 text-xs font-semibold text-textActive focus:outline-none">
+                            <option>Ahmad Dahlan, S.Kom (Saya)</option>
+                        </select>
+                        <select class="bg-bgSoft border border-borderSoft rounded-xl px-3 py-1.5 text-xs font-semibold text-textActive focus:outline-none">
+                            <option>Semester: Ganjil</option>
+                        </select>
+                        <span class="text-xs font-bold text-slate-500 bg-bgSoft px-3 py-1.5 rounded-xl border border-borderSoft">2025/2026</span>
+                    </div>
+                </div>
+
+                <!-- TABLE MATRIKS JADWAL MINGGUAN -->
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse min-w-[700px]">
+                        <thead>
+                            <tr class="bg-bgSoft text-[11px] font-extrabold text-slate-500 uppercase border-b border-borderSoft">
+                                <th class="p-3 text-left w-60">NAMA GURU / NIP</th>
+                                <th class="p-3 text-center">SENIN</th>
+                                <th class="p-3 text-center">SELASA</th>
+                                <th class="p-3 text-center">RABU</th>
+                                <th class="p-3 text-center">KAMIS</th>
+                                <th class="p-3 text-center">JUMAT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-borderSoft">
+                                <td class="p-3 align-top bg-bgSoft/30">
+                                    <h4 class="text-xs font-extrabold text-textActive">Ahmad Dahlan, S.Kom</h4>
+                                    <p class="text-[11px] text-primary font-semibold mt-0.5">Informatika</p>
+                                    <p class="text-[10px] text-slate-400 font-mono mt-1">NIP: 19881020 201504 1 002</p>
+                                </td>
+
+                                <td class="p-2.5 align-top space-y-2">
+                                    <div class="bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl shadow-xs">
+                                        <div class="flex items-center text-[10px] font-bold text-primary mb-1">
+                                            <i class="far fa-clock mr-1"></i> 09:15 - 10:00
+                                        </div>
+                                        <span class="text-[9px] font-extrabold uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Jam 3</span>
+                                        <h5 class="text-xs font-bold text-textActive mt-1">XI MIPA 1</h5>
+                                        <p class="text-[11px] text-slate-500">Informatika</p>
+                                    </div>
+                                    <div class="bg-emerald-50/80 border border-emerald-200 p-2.5 rounded-xl shadow-xs">
+                                        <div class="flex items-center text-[10px] font-bold text-emerald-700 mb-1">
+                                            <i class="far fa-clock mr-1"></i> 10:45 - 12:00
+                                        </div>
+                                        <span class="text-[9px] font-extrabold uppercase bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Jam 3-4</span>
+                                        <h5 class="text-xs font-bold text-textActive mt-1">X IPS 1</h5>
+                                        <p class="text-[11px] text-slate-500">Informatika</p>
+                                    </div>
+                                </td>
+
+                                <td class="p-2.5 align-top">
+                                    <div class="bg-red-50/80 border border-red-200 p-2.5 rounded-xl shadow-xs">
+                                        <div class="flex items-center text-[10px] font-bold text-primary mb-1">
+                                            <i class="far fa-clock mr-1"></i> 08:00 - 08:45
+                                        </div>
+                                        <span class="text-[9px] font-extrabold uppercase bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Jam 2</span>
+                                        <h5 class="text-xs font-bold text-textActive mt-1">XI MIPA 2</h5>
+                                        <p class="text-[11px] text-slate-500">Informatika</p>
+                                    </div>
+                                </td>
+
+                                <td class="p-2.5 align-top text-center text-[11px] text-slate-300 italic pt-6">
+                                    - Kosong -
+                                </td>
+
+                                <td class="p-2.5 align-top">
+                                    <div class="bg-blue-50/80 border border-blue-200 p-2.5 rounded-xl shadow-xs">
+                                        <div class="flex items-center text-[10px] font-bold text-primary mb-1">
+                                            <i class="far fa-clock mr-1"></i> 07:15 - 08:00
+                                        </div>
+                                        <span class="text-[9px] font-extrabold uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Jam 1</span>
+                                        <h5 class="text-xs font-bold text-textActive mt-1">XI MIPA 1</h5>
+                                        <p class="text-[11px] text-slate-500">Informatika</p>
+                                    </div>
+                                </td>
+
+                                <td class="p-2.5 align-top">
+                                    <div class="bg-emerald-50/80 border border-emerald-200 p-2.5 rounded-xl shadow-xs">
+                                        <div class="flex items-center text-[10px] font-bold text-emerald-700 mb-1">
+                                            <i class="far fa-clock mr-1"></i> 10:45 - 12:00
+                                        </div>
+                                        <span class="text-[9px] font-extrabold uppercase bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Jam 3-4</span>
+                                        <h5 class="text-xs font-bold text-textActive mt-1">X IPS 1</h5>
+                                        <p class="text-[11px] text-slate-500">Informatika</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION 2: GRID KELAS YANG DIAJAR & SILABUS (TENGAH) -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-textActive uppercase tracking-wider flex items-center gap-2">
+                            <i class="fas fa-layer-group text-primary"></i> KELAS DIAJAR & SILABUS MATA PELAJARAN
+                        </h3>
+                        <p class="text-xs text-textMuted">Pilih kelas untuk membuka silabus atau masuk ke form absensi detail kelas</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <!-- Card 1: XI MIPA 1 -->
+                    <div class="bg-white p-5 rounded-2xl border border-borderSoft shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex items-start justify-between">
+                                <span class="px-2.5 py-1 bg-blue-50 text-primary border border-blue-200 text-[10px] font-extrabold rounded-lg">
+                                    IF-1 • Peminatan
+                                </span>
+                                <span class="text-[11px] font-semibold text-slate-400">
+                                    <i class="fas fa-clock mr-1"></i> 3 Jam / mgg
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-textActive">Informatika - XI MIPA 1</h4>
+                                <p class="text-xs text-textMuted mt-0.5">Pengampu: Ahmad Dahlan, S.Kom</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-borderSoft space-y-2">
+                            <button onclick="openModalSilabus('Informatika', 'XI MIPA 1')" class="w-full py-2 px-3 bg-bgSoft hover:bg-blue-50 text-slate-700 hover:text-primary border border-borderSoft hover:border-blue-200 rounded-xl text-xs font-bold flex items-center justify-center transition-colors cursor-pointer">
+                                <i class="fas fa-file-lines mr-2 text-primary"></i> Lihat Silabus Kelas
+                            </button>
+                            <a href="detail_jadwal.html?kelas=XI-MIPA-1" class="w-full py-2.5 px-3 bg-primary hover:bg-primaryDark text-white rounded-xl text-xs font-bold flex items-center justify-center shadow-md shadow-blue-500/20 transition-all">
+                                <i class="fas fa-list-check mr-2"></i> Buka Absensi & QR Code
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: XI MIPA 2 -->
+                    <div class="bg-white p-5 rounded-2xl border border-borderSoft shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex items-start justify-between">
+                                <span class="px-2.5 py-1 bg-blue-50 text-primary border border-blue-200 text-[10px] font-extrabold rounded-lg">
+                                    IF-1 • Peminatan
+                                </span>
+                                <span class="text-[11px] font-semibold text-slate-400">
+                                    <i class="fas fa-clock mr-1"></i> 2 Jam / mgg
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-textActive">Informatika - XI MIPA 2</h4>
+                                <p class="text-xs text-textMuted mt-0.5">Pengampu: Ahmad Dahlan, S.Kom</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-borderSoft space-y-2">
+                            <button onclick="openModalSilabus('Informatika', 'XI MIPA 2')" class="w-full py-2 px-3 bg-bgSoft hover:bg-blue-50 text-slate-700 hover:text-primary border border-borderSoft hover:border-blue-200 rounded-xl text-xs font-bold flex items-center justify-center transition-colors cursor-pointer">
+                                <i class="fas fa-file-lines mr-2 text-primary"></i> Lihat Silabus Kelas
+                            </button>
+                            <a href="detail_jadwal.html?kelas=XI-MIPA-2" class="w-full py-2.5 px-3 bg-primary hover:bg-primaryDark text-white rounded-xl text-xs font-bold flex items-center justify-center shadow-md shadow-blue-500/20 transition-all">
+                                <i class="fas fa-list-check mr-2"></i> Buka Absensi & QR Code
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: X IPS 1 -->
+                    <div class="bg-white p-5 rounded-2xl border border-borderSoft shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                        <div class="space-y-3">
+                            <div class="flex items-start justify-between">
+                                <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold rounded-lg">
+                                    IF-1 • Wajib
+                                </span>
+                                <span class="text-[11px] font-semibold text-slate-400">
+                                    <i class="fas fa-clock mr-1"></i> 4 Jam / mgg
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-textActive">Informatika - X IPS 1</h4>
+                                <p class="text-xs text-textMuted mt-0.5">Pengampu: Ahmad Dahlan, S.Kom</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-borderSoft space-y-2">
+                            <button onclick="openModalSilabus('Informatika', 'X IPS 1')" class="w-full py-2 px-3 bg-bgSoft hover:bg-blue-50 text-slate-700 hover:text-primary border border-borderSoft hover:border-blue-200 rounded-xl text-xs font-bold flex items-center justify-center transition-colors cursor-pointer">
+                                <i class="fas fa-file-lines mr-2 text-primary"></i> Lihat Silabus Kelas
+                            </button>
+                            <a href="detail_jadwal.html?kelas=X-IPS-1" class="w-full py-2.5 px-3 bg-primary hover:bg-primaryDark text-white rounded-xl text-xs font-bold flex items-center justify-center shadow-md shadow-blue-500/20 transition-all">
+                                <i class="fas fa-list-check mr-2"></i> Buka Absensi & QR Code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL DOKUMEN SILABUS -->
+    <div id="silabusModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 space-y-5 shadow-2xl border border-borderSoft max-h-[90vh] overflow-y-auto">
+            
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-2 border-b border-borderSoft">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-blue-100 text-primary flex items-center justify-center text-xs">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3 id="silabusModalTitle" class="text-xs sm:text-sm font-extrabold uppercase tracking-wide text-slate-800">
+                        DOKUMEN SILABUS: BAHASA INDONESIA
+                    </h3>
+                </div>
+                <button onclick="closeModalSilabus()" class="p-1 text-slate-400 hover:text-slate-600 text-base transition-colors focus:outline-none cursor-pointer">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Top: Title & Upload Button -->
+            <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-slate-700">Daftar Berkas Silabus</h4>
+                <button onclick="document.getElementById('fileSilabusInput').click()" class="bg-primary hover:bg-primaryDark text-white px-3.5 py-1.5 rounded-full text-[11px] font-bold flex items-center shadow-md shadow-blue-500/20 transition-all cursor-pointer">
+                    <i class="fas fa-plus text-[10px] mr-1.5"></i> Tambah File Silabus
+                </button>
+                <input type="file" id="fileSilabusInput" class="hidden" accept=".pdf" onchange="handleFileUpload(event)">
+            </div>
+
+            <!-- Item Berkas Card -->
+            <div class="bg-white border border-borderSoft rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-red-100 text-danger flex items-center justify-center shrink-0">
+                        <i class="fas fa-file-pdf text-base"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p id="fileNameTxt" class="text-xs font-bold text-slate-800 truncate">Silabus_Bahasa_Indonesia_X.pdf</p>
+                        <p id="fileSizeTxt" class="text-[10px] text-slate-400 font-medium">1.2 MB</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3 text-xs font-bold shrink-0">
+                    <button onclick="previewFile()" class="text-primary hover:text-primaryDark flex items-center transition-colors cursor-pointer">
+                        <i class="far fa-eye mr-1 text-xs"></i> Preview
+                    </button>
+                    <button onclick="downloadFile()" class="text-emerald-600 hover:text-emerald-700 flex items-center transition-colors cursor-pointer">
+                        <i class="fas fa-download mr-1 text-xs"></i> Unduh
+                    </button>
+                    <button onclick="deleteFile()" class="text-slate-300 hover:text-danger transition-colors cursor-pointer pl-1">
+                        <i class="far fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Box Area -->
+            <div class="space-y-2">
+                <p class="text-[11px] font-bold text-slate-500">
+                    Menampilkan: <span id="displayFileNameTxt" class="text-slate-700">Silabus_Bahasa_Indonesia_X.pdf</span>
+                </p>
+
+                <div id="previewContainer" class="bg-slate-50/70 border border-borderSoft rounded-2xl p-8 sm:p-12 flex flex-col items-center justify-center min-h-[220px] text-center">
+                    <div class="bg-white border border-borderSoft rounded-xl p-6 sm:p-8 max-w-md w-full shadow-xs space-y-2">
+                        <h5 id="previewTitle" class="text-sm sm:text-base font-bold text-primary truncate">
+                            Silabus_Bahasa_Indonesia_X.pdf
+                        </h5>
+                        <p class="text-[11px] text-slate-400">Pratinjau Berkas Silabus Sistem Absensi Sekolah</p>
+                        <div class="pt-3 border-t border-borderSoft/60 mt-3">
+                            <p class="text-[10px] text-slate-400 font-medium">Dokumen ini valid dan tersimpan di server.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPT JS (Disamakan strukturnya seperti index.html) -->
+    <script src="../assets/js/dashwalas.js"></script>
+    <script>
+        // State Variabel Modal Silabus
+        let currentSubject = 'Bahasa Indonesia';
+        let currentClass = 'X';
+        let currentFileName = 'Silabus_Bahasa_Indonesia_X.pdf';
+
+        function openModalSilabus(mapel, kelas) {
+            currentSubject = mapel || 'Bahasa Indonesia';
+            currentClass = kelas || 'X';
+            
+            // Format nama file berdasarkan mapel & kelas
+            const formattedSubject = currentSubject.replace(/\s+/g, '_');
+            const formattedClass = currentClass.replace(/\s+/g, '_');
+            currentFileName = `Silabus_${formattedSubject}_${formattedClass}.pdf`;
+
+            // Update UI modal
+            document.getElementById('silabusModalTitle').innerText = `DOKUMEN SILABUS: ${currentSubject.toUpperCase()}`;
+            document.getElementById('fileNameTxt').innerText = currentFileName;
+            document.getElementById('displayFileNameTxt').innerText = currentFileName;
+            document.getElementById('previewTitle').innerText = currentFileName;
+
+            // Tampilkan Modal
+            document.getElementById('silabusModal').classList.remove('hidden');
+        }
+
+        function closeModalSilabus() {
+            document.getElementById('silabusModal').classList.add('hidden');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                currentFileName = file.name;
+                const sizeInMB = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+
+                document.getElementById('fileNameTxt').innerText = currentFileName;
+                document.getElementById('fileSizeTxt').innerText = sizeInMB;
+                document.getElementById('displayFileNameTxt').innerText = currentFileName;
+                document.getElementById('previewTitle').innerText = currentFileName;
+
+                alert(`File "${currentFileName}" berhasil diunggah!`);
+            }
+        }
+
+        function previewFile() {
+            alert(`Menampilkan pratinjau untuk: ${currentFileName}`);
+        }
+
+        function downloadFile() {
+            alert(`Mengunduh file: ${currentFileName}`);
+        }
+
+        function deleteFile() {
+            if (confirm(`Apakah Anda yakin ingin menghapus ${currentFileName}?`)) {
+                document.getElementById('fileNameTxt').innerText = 'Belum ada berkas silabus';
+                document.getElementById('fileSizeTxt').innerText = '0 MB';
+                document.getElementById('displayFileNameTxt').innerText = '-';
+                document.getElementById('previewTitle').innerText = 'Tidak Ada Berkas Terpilih';
+            }
+        }
+    </script>
+</body>
+</html>

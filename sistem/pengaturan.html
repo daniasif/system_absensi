@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/absensi.css">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',   
+                        primarySoft: '#EFF6FF',
+                        primaryDark: '#1D4ED8',
+                        success: '#16A34A',
+                        warning: '#F59E0B',
+                        danger: '#DC2626',
+                        bgSoft: '#F8FAFC',
+                        borderSoft: '#E2E8F0',
+                        textActive: '#0F172A',
+                        textMuted: '#64748B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- CSS Transisi untuk Sembunyikan Sidebar & Auto Layout -->
+    <style>
+        #sidebarMenu, main {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @media (min-width: 1024px) {
+            body.sidebar-collapsed #sidebarMenu {
+                transform: translateX(-100%);
+            }
+            body.sidebar-collapsed main {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-bgSoft text-slate-700 antialiased overflow-x-hidden">
+
+    <!-- TOPBAR -->
+    <header class="fixed top-0 w-full h-16 z-40 bg-white/95 border-b border-borderSoft backdrop-blur-sm">
+        <div class="h-full flex items-center justify-between px-4 lg:px-8">
+            <!-- Left: Logo + Title -->
+            <div class="flex items-center space-x-3">
+                <button id="hamburgerBtn" class="p-2 text-textMuted hover:text-primary transition-colors focus:outline-none rounded-lg hover:bg-bgSoft">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+                        <i class="fas fa-graduation-cap text-base"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-[13px] font-bold text-textActive tracking-normal leading-none">Absensi Sekolah</p>
+                        <p class="text-[11px] text-textMuted leading-tight mt-1">Dashboard Kehadiran Harian</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Search Input (Desktop) -->
+            <div class="hidden md:flex items-center bg-bgSoft border border-borderSoft rounded-full px-4 py-1.5 w-80 lg:w-96 shadow-sm focus-within:border-primary transition-all">
+                <i class="fas fa-search text-slate-400 mr-3 text-xs"></i>
+                <input type="text" placeholder="Cari siswa, kelas, atau guru..."
+                       class="bg-transparent text-xs w-full focus:outline-none text-slate-600 placeholder-slate-400 tracking-normal">
+                <span class="text-[10px] text-slate-400 px-2 py-0.5 rounded-full border border-borderSoft bg-white font-mono">Ctrl+F</span>
+            </div>
+
+            <!-- Right: Action Buttons -->
+            <div class="flex items-center space-x-1.5 sm:space-x-3">
+                <button id="mobileSearchBtn" class="md:hidden p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none">
+                    <i class="fas fa-search text-base"></i>
+                </button>
+
+                <!-- Notification Dropdown Container -->
+                <div class="relative">
+                    <button id="notifBtn" class="relative p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none">
+                        <i class="far fa-bell text-base"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full"></span>
+                    </button>
+
+                    <div id="notifDropdown" class="hidden absolute -right-12 sm:right-0 mt-3 w-[calc(100vw-2rem)] max-w-xs sm:w-80 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 overflow-hidden">
+                        <div class="p-3.5 border-b border-borderSoft flex items-center justify-between bg-bgSoft/50">
+                            <h4 class="text-xs font-bold text-textActive">Notifikasi</h4>
+                            <span class="text-[9px] bg-primarySoft text-primary px-2 py-0.5 rounded-full font-semibold border border-blue-100">1 Baru</span>
+                        </div>
+                        <div class="p-2">
+                            <a href="#" class="flex gap-3 p-3 rounded-xl hover:bg-bgSoft transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-textActive leading-snug truncate">Kalender Akademik Update</p>
+                                    <p class="text-[11px] text-textMuted mt-1 leading-relaxed break-words">Jadwal Kalender Akademik berhasil diperbarui.</p>
+                                    <span class="text-[9px] text-slate-400 mt-1.5 block">Baru saja</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-6 w-[1px] bg-borderSoft hidden sm:block"></div>
+
+                <!-- Profile Admin Dropdown Container -->
+                <div class="relative">
+                    <button id="profileBtn" class="flex items-center space-x-2 p-1 sm:p-1.5 rounded-full hover:bg-bgSoft transition-colors focus:outline-none">
+                        <img id="topbarAvatar" src="https://ui-avatars.com/api/?name=Admin+Sekolah&background=2563EB&color=fff" 
+                             alt="Profile Admin" 
+                             class="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20">
+                        <div class="hidden md:block text-left pr-1">
+                            <p class="text-xs font-bold text-textActive leading-tight">Admin Sekolah</p>
+                            <p class="text-[10px] text-textMuted leading-tight mt-0.5">Administrator</p>
+                        </div>
+                        <i class="fas fa-chevron-down text-[10px] text-textMuted hidden md:block pl-1"></i>
+                    </button>
+
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-48 sm:w-52 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 p-1.5">
+                        <div class="px-3 py-2 border-b border-borderSoft mb-1 md:hidden">
+                            <p class="text-xs font-bold text-textActive truncate">Admin Sekolah</p>
+                            <p class="text-[10px] text-textMuted">Administrator</p>
+                        </div>
+                        <a href="pengaturan.html" class="flex items-center px-3 py-2 text-xs text-textMuted hover:bg-bgSoft hover:text-textActive rounded-lg transition-colors font-medium">
+                            <i class="fas fa-user-gear w-4 mr-2.5 text-slate-400"></i> Pengaturan
+                        </a>
+                        <div class="my-1 border-t border-borderSoft"></div>
+                        <a href="../login.html" class="flex items-center px-3 py-2 text-xs text-danger hover:bg-red-50 rounded-lg transition-colors font-semibold">
+                            <i class="fas fa-arrow-right-from-bracket w-4 mr-2.5"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH OVERLAY / MODAL (Mobile) -->
+        <div id="mobileSearchModal" class="fixed inset-0 bg-white z-50 p-4 hidden md:hidden flex-col">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="flex-1 flex items-center bg-bgSoft border border-borderSoft rounded-xl px-3.5 py-2.5 focus-within:border-primary transition-all">
+                    <i class="fas fa-search text-slate-400 mr-3 text-sm"></i>
+                    <input id="mobileSearchInput" type="text" placeholder="Cari siswa, kelas, atau guru..."
+                           class="bg-transparent text-sm w-full focus:outline-none text-slate-700 placeholder-slate-400">
+                </div>
+                <button id="closeSearchBtn" class="p-2 text-textMuted hover:text-danger text-sm font-semibold transition-colors">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex pt-16">
+        <!-- SIDEBAR -->
+        <aside id="sidebarMenu"
+               class="fixed bottom-0 left-0 h-[calc(100vh-64px)] w-64 bg-white border-r border-borderSoft z-30 overflow-y-auto px-4 py-5 -translate-x-full lg:translate-x-0 shadow-lg shadow-slate-100">
+
+            <div class="flex items-center space-x-2.5 sm:hidden mb-5 pb-3 border-b border-borderSoft">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-xs"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-textActive">Absensi Sekolah</p>
+                    <p class="text-[10px] text-textMuted">Dashboard Kehadiran</p>
+                </div>
+            </div>
+
+            <!-- MAIN MENU -->
+            <nav class="space-y-5">
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">
+                        NAVIGASI UTAMA
+                    </p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="../index.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <span class="flex items-center space-x-3">
+                                    <i class="fas fa-chart-pie w-4 text-center text-sm"></i>
+                                    <span>Dashboard</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/profilesek.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-school w-4 text-center text-sm"></i>
+                                <span class="ml-3">Profil Sekolah</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/dataguru.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-chalkboard-user w-4 text-center text-sm"></i>
+                                <span class="ml-3">Data Guru</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/kelas.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-door-closed w-4 text-center text-sm"></i>
+                                <span class="ml-3">Kelas</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/datasiswa.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-user-graduate w-4 text-center text-sm"></i>
+                                <span class="ml-3">Data Siswa</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/matapelajaran.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-book-bookmark w-4 text-center text-sm"></i>
+                                <span class="ml-3">Mata Pelajaran</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">
+                        JADWAL & KEGIATAN
+                    </p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="../jadwal/jad_pelajaran.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-calendar-days w-4 text-center text-sm"></i>
+                                <span class="ml-3">Jadwal Pelajaran</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../jadwal/jad_guru.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-clipboard-user w-4 text-center text-sm"></i>
+                                <span class="ml-3">Jadwal Guru</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../jadwal/jad_kegiatan.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-clock w-4 text-center text-sm"></i>
+                                <span class="ml-3">Jadwal Kegiatan</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../jadwal/kalender.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-calendar-week w-4 text-center text-sm"></i>
+                                <span class="ml-3">Kalender Akademik</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">
+                        MODUL ABSENSI
+                    </p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="../absensi/presensi_siswa.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-id-card w-4 text-center text-sm"></i>
+                                <span class="ml-3">Presensi Siswa</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../absensi/presensi_guru.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-user-check w-4 text-center text-sm"></i>
+                                <span class="ml-3">Presensi Guru</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../absensi/rekap_kehadiran.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-file-invoice w-4 text-center text-sm"></i>
+                                <span class="ml-3">Rekap Kehadiran</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../absensi/approval.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-circle-check w-4 text-center text-sm"></i>
+                                <span class="ml-3">Approval</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-3 border-t border-borderSoft/70">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">
+                        SISTEM
+                    </p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="pengaturan.html" class="sidebar-item active flex items-center px-3 py-2.5 rounded-lg text-primary font-semibold text-sm tracking-normal transition-colors bg-primarySoft">
+                                <i class="fas fa-sliders w-4 text-center text-sm"></i>
+                                <span class="ml-3">Pengaturan</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../login.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-danger hover:bg-red-50 text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-arrow-right-from-bracket w-4 text-center text-sm"></i>
+                                <span class="ml-3">Log Out</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- OVERLAY (MOBILE) -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/40 z-20 hidden lg:hidden"></div>
+
+        <!-- MAIN CONTENT CONTAINER -->
+        <main class="flex-1 lg:ml-64 p-4 lg:p-8 min-h-[calc(100vh-64px)]">
+            <!-- Header Halaman -->
+            <div class="mb-6">
+                <h1 class="text-xl font-bold text-textActive">Pengaturan Sistem & Akun</h1>
+                <p class="text-xs text-textMuted mt-1">Kelola profil pribadi dan hak akses pengguna.</p>
+            </div>
+
+            <!-- Layout Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <!-- Sidebar Tab Pengaturan -->
+                <div class="lg:col-span-1 space-y-2" id="tabContainer">
+                    <button data-target="sectionProfil" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-primary text-white font-medium text-xs shadow-md shadow-blue-500/20 transition-all">
+                        <i class="fas fa-user-gear text-sm"></i>
+                        <span>Profil Saya</span>
+                    </button>
+                    <button data-target="sectionUser" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-white text-textMuted hover:bg-slate-100 hover:text-textActive font-medium text-xs border border-borderSoft transition-all">
+                        <i class="fas fa-users-gear text-sm"></i>
+                        <span>Manajemen User & Role</span>
+                    </button>
+                </div>
+
+                <!-- Area Konten Utama Pengaturan -->
+                <div class="lg:col-span-3 space-y-6">
+                    
+                    <!-- SECTION 1: PROFIL SAYA -->
+                    <form id="profileForm" class="tab-content bg-white rounded-2xl p-6 border border-borderSoft shadow-sm space-y-6">
+                        <h3 class="text-sm font-bold text-textActive border-b border-borderSoft pb-3">Profil Saya</h3>
+                        
+                        <!-- Ganti Foto Profil -->
+                        <div class="flex items-center space-x-4">
+                            <img id="profilePreview" src="https://ui-avatars.com/api/?name=Admin+Sekolah&background=2563EB&color=fff" 
+                                 alt="Foto Profil" class="w-16 h-16 rounded-full ring-4 ring-blue-50 object-cover">
+                            <div>
+                                <input type="file" id="avatarFileInput" accept="image/png, image/jpeg" class="hidden">
+                                <div class="flex space-x-2">
+                                    <button type="button" id="btnUploadPhoto" class="px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primaryDark transition-colors">
+                                        Upload Foto Baru
+                                    </button>
+                                    <button type="button" id="btnDeletePhoto" class="px-3 py-1.5 bg-red-50 text-danger text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors">
+                                        Hapus
+                                    </button>
+                                </div>
+                                <p class="text-[10px] text-textMuted mt-1">Format PNG/JPG max 2MB.</p>
+                            </div>
+                        </div>
+
+                        <!-- Data Informasi Profil Saya -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-borderSoft">
+                            <div>
+                                <label class="block text-xs font-semibold text-textActive mb-1">Nama Lengkap</label>
+                                <input type="text" id="profileName" value="Admin Sekolah" class="w-full px-3 py-2 bg-bgSoft border border-borderSoft rounded-xl text-xs focus:outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-textActive mb-1">Username</label>
+                                <input type="text" id="profileUsername" value="admin_sekolah" class="w-full px-3 py-2 bg-bgSoft border border-borderSoft rounded-xl text-xs focus:outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-textActive mb-1">Email</label>
+                                <input type="email" id="profileEmail" value="admin@sekolah.sch.id" class="w-full px-3 py-2 bg-bgSoft border border-borderSoft rounded-xl text-xs focus:outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-textActive mb-1">Role / Hak Akses</label>
+                                <input type="text" id="profileRole" value="Administrator" disabled class="w-full px-3 py-2 bg-slate-100 border border-borderSoft rounded-xl text-xs text-textMuted cursor-not-allowed">
+                            </div>
+                        </div>
+
+                        <!-- Form Ganti Password Profil -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-borderSoft">
+                            <div>
+                                <label class="block text-xs font-semibold text-textActive mb-1">Password Saat Ini</label>
+                                <div class="relative">
+                                    <input type="password" id="currentPassword" placeholder="••••••••" class="w-full px-3 py-2 pr-10 bg-bgSoft border border-borderSoft rounded-xl text-xs focus:outline-none focus:border-primary">
+                                    <button type="button" class="toggle-password absolute right-3 top-2.5 text-slate-400 hover:text-textActive text-xs">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-textActive mb-1">Password Baru</label>
+                                <div class="relative">
+                                    <input type="password" id="newPassword" placeholder="••••••••" class="w-full px-3 py-2 pr-10 bg-bgSoft border border-borderSoft rounded-xl text-xs focus:outline-none focus:border-primary">
+                                    <button type="button" class="toggle-password absolute right-3 top-2.5 text-slate-400 hover:text-textActive text-xs">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Save Profil -->
+                        <div class="flex justify-end pt-2">
+                            <button type="submit" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primaryDark transition-colors flex items-center space-x-2 shadow-sm">
+                                <i class="fas fa-save"></i>
+                                <span>Simpan Perubahan</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- SECTION 2: MANAJEMEN USER -->
+                    <div id="sectionUser" class="tab-content hidden bg-white rounded-2xl p-6 border border-borderSoft shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-borderSoft pb-3">
+                            <div>
+                                <h3 class="text-sm font-bold text-textActive">Manajemen Akun & Hak Akses (Role)</h3>
+                                <p class="text-[11px] text-textMuted">Atur password dan akses untuk Guru / Staff.</p>
+                            </div>
+                            <button id="btnAddUser" class="px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primaryDark transition-colors flex items-center space-x-1.5">
+                                <i class="fas fa-plus text-[10px]"></i>
+                                <span>Tambah User</span>
+                            </button>
+                        </div>
+
+                        <!-- Tabel User List -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-borderSoft text-[11px] font-bold text-textMuted uppercase bg-bgSoft/50">
+                                        <th class="py-2.5 px-3">Pengguna</th>
+                                        <th class="py-2.5 px-3">Username</th>
+                                        <th class="py-2.5 px-3">Role</th>
+                                        <th class="py-2.5 px-3">Status</th>
+                                        <th class="py-2.5 px-3 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody" class="divide-y divide-borderSoft text-xs">
+                                    <!-- Rendered dynamically via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL POPUP USER (TAMBAH / EDIT) -->
+    <div id="userModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-borderSoft space-y-4">
+            <div class="flex items-center justify-between border-b border-borderSoft pb-3">
+                <h3 id="modalTitle" class="text-sm font-bold text-textActive">Tambah User & Berikan Akses</h3>
+                <button id="closeModalBtn" class="text-textMuted hover:text-danger"><i class="fas fa-xmark text-base"></i></button>
+            </div>
+            <form id="userForm" class="space-y-3 text-xs">
+                <input type="hidden" id="editUserIndex" value="-1">
+                
+                <!-- Nama -->
+                <div>
+                    <label class="block font-semibold text-textActive mb-1">Nama Lengkap & Gelar</label>
+                    <input type="text" id="inputName" required placeholder="Contoh: Budi Santoso, S.Pd" class="w-full px-3 py-2 bg-bgSoft border border-borderSoft rounded-xl focus:outline-none focus:border-primary">
+                </div>
+
+                <!-- Username -->
+                <div>
+                    <label class="block font-semibold text-textActive mb-1">Username Login</label>
+                    <input type="text" id="inputUsername" required placeholder="Contoh: budi_santoso" class="w-full px-3 py-2 bg-bgSoft border border-borderSoft rounded-xl focus:outline-none focus:border-primary">
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block font-semibold text-textActive mb-1">Email</label>
+                    <input type="email" id="inputEmail" required placeholder="budi@sekolah.sch.id" class="w-full px-3 py-2 bg-bgSoft border border-borderSoft rounded-xl focus:outline-none focus:border-primary">
+                </div>
+
+                <!-- Role -->
+                <div>
+                    <label class="block font-semibold text-textActive mb-1">Role / Hak Akses</label>
+                    <select id="inputRole" class="w-full px-3 py-2 bg-bgSoft border border-borderSoft rounded-xl focus:outline-none focus:border-primary">
+                        <option value="Guru">Guru</option>
+                        <option value="Administrator">Administrator</option>
+                    </select>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block font-semibold text-textActive mb-1">Password Akun (Set oleh Admin)</label>
+                    <div class="relative">
+                        <input type="password" id="inputPassword" required placeholder="Masukkan password user..." class="w-full px-3 py-2 pr-10 bg-bgSoft border border-borderSoft rounded-xl focus:outline-none focus:border-primary">
+                        <button type="button" class="toggle-password absolute right-3 top-2.5 text-slate-400 hover:text-textActive text-xs">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-3 border-t border-borderSoft">
+                    <button type="button" id="cancelModalBtn" class="px-4 py-2 bg-slate-100 text-textMuted font-semibold rounded-xl hover:bg-slate-200">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white font-semibold rounded-xl hover:bg-primaryDark flex items-center space-x-1.5 shadow-sm">
+                        <i class="fas fa-save text-xs"></i>
+                        <span>Simpan User</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT FILES -->
+    <script src="../assets/js/layout.js"></script>
+    <script src="../assets/js/pengaturan.js"></script>
+</body>
+</html>

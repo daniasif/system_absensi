@@ -1,0 +1,61 @@
+@charset "UTF-8";
+
+/* Font & Reset Utama */
+* {
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+    scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { 
+    width: 5px; 
+}
+::-webkit-scrollbar-track { 
+    background: transparent; 
+}
+::-webkit-scrollbar-thumb { 
+    background: #CBD5E1; 
+    border-radius: 999px; 
+}
+::-webkit-scrollbar-thumb:hover { 
+    background: #94A3B8; 
+}
+
+/* Indikator Vertikal untuk Active Menu Sidebar */
+.sidebar-item {
+    position: relative;
+}
+.sidebar-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 0;
+    border-radius: 0 4px 4px 0;
+    background: #2563EB;
+    transition: height 0.2s ease;
+}
+.sidebar-item.active::before {
+    height: 60%;
+}
+
+/* --- FITUR DESKTOP SIDEBAR TOGGLE --- */
+/* Transisi halus untuk margin konten utama saat sidebar disembunyikan */
+main {
+    transition: margin-left 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mode ketika sidebar di-hide di Desktop */
+@media (min-width: 1024px) {
+    body.sidebar-collapsed #sidebarMenu {
+        transform: translateX(-100%);
+    }
+    body.sidebar-collapsed main {
+        margin-left: 0 !important;
+    }
+}

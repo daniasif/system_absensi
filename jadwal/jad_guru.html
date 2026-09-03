@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Absensi Sekolah</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../assets/css/absensi.css">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',   
+                        primarySoft: '#EFF6FF',
+                        primaryDark: '#1D4ED8',
+                        success: '#16A34A',
+                        warning: '#F59E0B',
+                        danger: '#DC2626',
+                        bgSoft: '#F8FAFC',
+                        borderSoft: '#E2E8F0',
+                        textActive: '#0F172A',
+                        textMuted: '#64748B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <style>
+        #sidebarMenu, main {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @media (min-width: 1024px) {
+            body.sidebar-collapsed #sidebarMenu {
+                transform: translateX(-100%);
+            }
+            body.sidebar-collapsed main {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-bgSoft text-slate-700 antialiased overflow-x-hidden">
+
+    <!-- TOPBAR -->
+    <header class="fixed top-0 w-full h-16 z-40 bg-white/95 border-b border-borderSoft backdrop-blur-sm">
+        <div class="h-full flex items-center justify-between px-4 lg:px-8">
+            <div class="flex items-center space-x-3">
+                <button id="hamburgerBtn" class="p-2 text-textMuted hover:text-primary transition-colors focus:outline-none rounded-lg hover:bg-bgSoft">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+                        <i class="fas fa-graduation-cap text-base"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-[13px] font-bold text-textActive tracking-normal leading-none">Absensi Sekolah</p>
+                        <p class="text-[11px] text-textMuted leading-tight mt-1">Dashboard Kehadiran Harian</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center bg-bgSoft border border-borderSoft rounded-full px-4 py-1.5 w-80 lg:w-96 shadow-sm focus-within:border-primary transition-all">
+                <i class="fas fa-search text-slate-400 mr-3 text-xs"></i>
+                <input type="text" placeholder="Cari siswa, kelas, atau guru..."
+                       class="bg-transparent text-xs w-full focus:outline-none text-slate-600 placeholder-slate-400 tracking-normal">
+                <span class="text-[10px] text-slate-400 px-2 py-0.5 rounded-full border border-borderSoft bg-white font-mono">Ctrl+F</span>
+            </div>
+
+            <div class="flex items-center space-x-1.5 sm:space-x-3">
+                <button id="mobileSearchBtn" class="md:hidden p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none">
+                    <i class="fas fa-search text-base"></i>
+                </button>
+
+                <div class="relative">
+                    <button id="notifBtn" class="relative p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none">
+                        <i class="far fa-bell text-base"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full"></span>
+                    </button>
+
+                    <div id="notifDropdown" class="hidden absolute -right-12 sm:right-0 mt-3 w-[calc(100vw-2rem)] max-w-xs sm:w-80 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 overflow-hidden">
+                        <div class="p-3.5 border-b border-borderSoft flex items-center justify-between bg-bgSoft/50">
+                            <h4 class="text-xs font-bold text-textActive">Notifikasi</h4>
+                            <span class="text-[9px] bg-primarySoft text-primary px-2 py-0.5 rounded-full font-semibold border border-blue-100">1 Baru</span>
+                        </div>
+                        <div class="p-2">
+                            <a href="#" class="flex gap-3 p-3 rounded-xl hover:bg-bgSoft transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-textActive leading-snug truncate">Kalender Akademik Update</p>
+                                    <p class="text-[11px] text-textMuted mt-1 leading-relaxed break-words">Jadwal Kalender Akademik berhasil diperbarui.</p>
+                                    <span class="text-[9px] text-slate-400 mt-1.5 block">Baru saja</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-6 w-[1px] bg-borderSoft hidden sm:block"></div>
+
+                <div class="relative">
+                    <button id="profileBtn" class="flex items-center space-x-2 p-1 sm:p-1.5 rounded-full hover:bg-bgSoft transition-colors focus:outline-none">
+                        <img src="https://ui-avatars.com/api/?name=Admin+Sekolah&background=2563EB&color=fff" 
+                             alt="Profile Admin" 
+                             class="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20">
+                        <div class="hidden md:block text-left pr-1">
+                            <p class="text-xs font-bold text-textActive leading-tight">Admin Sekolah</p>
+                            <p class="text-[10px] text-textMuted leading-tight mt-0.5">Administrator</p>
+                        </div>
+                        <i class="fas fa-chevron-down text-[10px] text-textMuted hidden md:block pl-1"></i>
+                    </button>
+
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-48 sm:w-52 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 p-1.5">
+                        <div class="px-3 py-2 border-b border-borderSoft mb-1 md:hidden">
+                            <p class="text-xs font-bold text-textActive truncate">Admin Sekolah</p>
+                            <p class="text-[10px] text-textMuted">Administrator</p>
+                        </div>
+                        <a href="#" class="flex items-center px-3 py-2 text-xs text-textMuted hover:bg-bgSoft hover:text-textActive rounded-lg transition-colors font-medium">
+                            <i class="fas fa-user-gear w-4 mr-2.5 text-slate-400"></i> Pengaturan
+                        </a>
+                        <div class="my-1 border-t border-borderSoft"></div>
+                        <a href="#" class="flex items-center px-3 py-2 text-xs text-danger hover:bg-red-50 rounded-lg transition-colors font-semibold">
+                            <i class="fas fa-arrow-right-from-bracket w-4 mr-2.5"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobileSearchModal" class="fixed inset-0 bg-white z-50 p-4 hidden md:hidden flex-col">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="flex-1 flex items-center bg-bgSoft border border-borderSoft rounded-xl px-3.5 py-2.5 focus-within:border-primary transition-all">
+                    <i class="fas fa-search text-slate-400 mr-3 text-sm"></i>
+                    <input id="mobileSearchInput" type="text" placeholder="Cari siswa, kelas, atau guru..."
+                           class="bg-transparent text-sm w-full focus:outline-none text-slate-700 placeholder-slate-400">
+                </div>
+                <button id="closeSearchBtn" class="p-2 text-textMuted hover:text-danger text-sm font-semibold transition-colors">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex pt-16">
+        <!-- SIDEBAR -->
+        <aside id="sidebarMenu"
+               class="fixed bottom-0 left-0 h-[calc(100vh-64px)] w-64 bg-white border-r border-borderSoft z-30 overflow-y-auto px-4 py-5 -translate-x-full lg:translate-x-0 shadow-lg shadow-slate-100">
+
+            <div class="flex items-center space-x-2.5 sm:hidden mb-5 pb-3 border-b border-borderSoft">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-xs"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-textActive">Absensi Sekolah</p>
+                    <p class="text-[10px] text-textMuted">Dashboard Kehadiran</p>
+                </div>
+            </div>
+
+            <nav class="space-y-5">
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">
+                        NAVIGASI UTAMA
+                    </p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="../index.html" class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <span class="flex items-center space-x-3">
+                                    <i class="fas fa-chart-pie w-4 text-center text-sm"></i>
+                                    <span>Dashboard</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/profilesek.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-school w-4 text-center text-sm"></i>
+                                <span class="ml-3">Profil Sekolah</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/dataguru.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-chalkboard-user w-4 text-center text-sm"></i>
+                                <span class="ml-3">Data Guru</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/kelas.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-door-closed w-4 text-center text-sm"></i>
+                                <span class="ml-3">Kelas</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/datasiswa.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-user-graduate w-4 text-center text-sm"></i>
+                                <span class="ml-3">Data Siswa</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../nav_utama/matapelajaran.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-book-bookmark w-4 text-center text-sm"></i>
+                                <span class="ml-3">Mata Pelajaran</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">
+                        JADWAL & KEGIATAN
+                    </p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="jad_pelajaran.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-calendar-days w-4 text-center text-sm"></i>
+                                <span class="ml-3">Jadwal Pelajaran</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="jad_guru.html" class="sidebar-item active flex items-center px-3 py-2.5 rounded-lg text-primary font-semibold text-sm tracking-normal transition-colors bg-primarySoft">
+                                <i class="fas fa-clipboard-user w-4 text-center text-sm"></i>
+                                <span class="ml-3">Jadwal Guru</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="jad_kegiatan.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-clock w-4 text-center text-sm"></i>
+                                <span class="ml-3">Jadwal Kegiatan</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="kalender.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-calendar-week w-4 text-center text-sm"></i>
+                                <span class="ml-3">Kalender Akademik</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">
+                        MODUL ABSENSI
+                    </p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="../absensi/presensi_siswa.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-id-card w-4 text-center text-sm"></i>
+                                <span class="ml-3">Presensi Siswa</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../absensi/presensi_guru.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-user-check w-4 text-center text-sm"></i>
+                                <span class="ml-3">Presensi Guru</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../absensi/rekap_kehadiran.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-file-invoice w-4 text-center text-sm"></i>
+                                <span class="ml-3">Rekap Kehadiran</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../absensi/approval.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-circle-check w-4 text-center text-sm"></i>
+                                <span class="ml-3">Approval</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-3 border-t border-borderSoft/70">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">
+                        SISTEM
+                    </p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="../sistem/pengaturan.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-sliders w-4 text-center text-sm"></i>
+                                <span class="ml-3">Pengaturan</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-danger hover:bg-red-50 text-sm tracking-normal transition-colors font-medium">
+                                <i class="fas fa-arrow-right-from-bracket w-4 text-center text-sm"></i>
+                                <span class="ml-3">Log Out</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/40 z-20 hidden lg:hidden"></div>
+
+        <!-- MAIN CONTENT CONTAINER -->
+        <main class="flex-1 w-full lg:ml-64 p-3 sm:p-4 lg:p-8 min-h-[calc(100vh-64px)] space-y-6 box-border overflow-x-hidden">
+            
+            <!-- HEADER PAGE -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-borderSoft shadow-sm">
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-textActive flex items-center gap-2">
+                        <i class="fas fa-clipboard-user text-primary"></i> Management Jadwal Guru
+                    </h1>
+                    <p class="text-xs text-textMuted mt-1">Pantau alokasi mengajar guru, jam kosong, dan beban kerja pengajar harian.</p>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="btnExportPDF" class="px-3 py-2 bg-bgSoft hover:bg-slate-100 border border-borderSoft text-textActive text-xs font-semibold rounded-xl flex items-center gap-2">
+                        <i class="fas fa-print text-primary"></i> Cetak Jadwal Guru
+                    </button>
+                    <button id="btnExportExcel" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 shadow-sm">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- STATUS BENTROK CARD CONTAINER -->
+            <div id="clashStatusCard" class="w-full">
+                <div class="bg-white p-4 rounded-2xl border border-borderSoft shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-semibold text-textMuted uppercase tracking-wider">Status Bentrok Jadwal</p>
+                        <h3 class="text-base sm:text-lg font-bold text-emerald-600 mt-0.5">Aman (0 Bentrok)</h3>
+                        <p class="text-[10px] text-textMuted mt-0.5">Semua alokasi jam mengajar guru sudah sesuai.</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0">
+                        <i class="fas fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER & VIEW CONTROLLER -->
+            <div class="bg-white p-4 rounded-2xl border border-borderSoft shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <span class="text-xs font-bold text-textActive flex items-center gap-2 w-full sm:w-auto">
+                        <i class="fas fa-filter text-primary"></i> Filter Pengajar:
+                    </span>
+                    <div class="w-full sm:w-56">
+                        <select id="selectGuru" class="w-full bg-bgSoft border border-borderSoft text-textActive text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-primary">
+                            <option value="all">-- Semua Guru (Matriks) --</option>
+                            <option value="1">Ahmad Dahlan, S.Kom</option>
+                            <option value="2">Dra. Hj. Siti Aminah</option>
+                            <option value="3">Eko Prasetyo, M.Pd</option>
+                        </select>
+                    </div>
+
+                    <div class="w-full sm:w-36">
+                        <select id="selectGanjilGenap" class="w-full bg-bgSoft border border-borderSoft text-textActive text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-primary">
+                            <option value="Ganjil">Semester: Ganjil</option>
+                            <option value="Genap">Semester: Genap</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <div class="w-full sm:w-44">
+                        <select id="selectTahun" class="w-full bg-bgSoft border border-borderSoft text-textActive text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:border-primary">
+                            <option value="2025/2026">Tahun: 2025/2026</option>
+                            <option value="2026/2027">Tahun: 2026/2027</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE AREA -->
+            <div class="bg-white rounded-2xl border border-borderSoft shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-borderSoft flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-bgSoft/50">
+                    <h3 class="text-xs font-bold text-textActive uppercase tracking-wider flex items-center gap-2">
+                        <i class="fas fa-table-list text-slate-400"></i> Jadwal Mengajar Guru
+                    </h3>
+                    <span class="text-[11px] text-textMuted font-medium">Geser tabel menyamping untuk melihat hari lainnya.</span>
+                </div>
+
+                <div class="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
+                    <table class="w-full text-left border-collapse min-w-[750px] sm:min-w-[900px]">
+                        <thead>
+                            <tr class="bg-bgSoft border-b border-borderSoft text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="p-3.5 border-r border-borderSoft font-bold w-48">Nama Guru / NIP</th>
+                                <th class="p-3.5 border-r border-borderSoft text-center">Senin</th>
+                                <th class="p-3.5 border-r border-borderSoft text-center">Selasa</th>
+                                <th class="p-3.5 border-r border-borderSoft text-center">Rabu</th>
+                                <th class="p-3.5 border-r border-borderSoft text-center">Kamis</th>
+                                <th class="p-3.5 text-center">Jumat</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-borderSoft text-xs">
+                            <tr>
+                                <td class="p-3.5 border-r border-borderSoft bg-bgSoft/30">
+                                    <p class="font-bold text-textActive">Ahmad Dahlan, S.Kom</p>
+                                    <p class="text-[10px] text-textMuted">Informatika • NIP. 198820...</p>
+                                </td>
+                                <td class="p-2 border-r border-borderSoft">
+                                    <div class="p-2 bg-blue-50/80 border border-blue-100 rounded-xl mb-1">
+                                        <span class="text-[9px] font-bold text-primary block">Jam 1-2 (07.15-08.45)</span>
+                                        <p class="font-semibold text-textActive">XI MIPA 1</p>
+                                    </div>
+                                </td>
+                                <td class="p-2 border-r border-borderSoft">
+                                    <div class="p-2 bg-emerald-50/80 border border-emerald-100 rounded-xl mb-1">
+                                        <span class="text-[9px] font-bold text-emerald-600 block">Jam 3-4 (09.15-10.45)</span>
+                                        <p class="font-semibold text-textActive">X IPS 2</p>
+                                    </div>
+                                </td>
+                                <td class="p-2 border-r border-borderSoft text-center text-slate-400 font-medium text-[11px]">
+                                    - Kosong -
+                                </td>
+                                <td class="p-2 border-r border-borderSoft">
+                                    <div class="p-2 bg-purple-50/80 border border-purple-100 rounded-xl mb-1">
+                                        <span class="text-[9px] font-bold text-purple-600 block">Jam 1-2 (07.15-08.45)</span>
+                                        <p class="font-semibold text-textActive">XII MIPA 3</p>
+                                    </div>
+                                </td>
+                                <td class="p-2 text-center text-slate-400 font-medium text-[11px]">
+                                    - Kosong -
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT FILES -->
+    <script src="../assets/js/layout.js"></script>
+    <script src="../assets/js/jad_guru.js"></script>
+</body>
+</html>

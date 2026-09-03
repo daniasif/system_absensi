@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Guru & Wali Kelas - Absensi Sekolah</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="../assets/css/absensi.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',   
+                        primarySoft: '#EFF6FF',
+                        primaryDark: '#1D4ED8',
+                        success: '#16A34A',
+                        warning: '#F59E0B',
+                        danger: '#DC2626',
+                        bgSoft: '#F8FAFC',
+                        borderSoft: '#E2E8F0',
+                        textActive: '#0F172A',
+                        textMuted: '#64748B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- CSS Transisi -->
+    <style>
+        #sidebarMenu, main {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media (min-width: 1024px) {
+            body.sidebar-collapsed #sidebarMenu { transform: translateX(-100%); }
+            body.sidebar-collapsed main { margin-left: 0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-bgSoft text-slate-700 antialiased overflow-x-hidden">
+
+    <!-- TOPBAR -->
+    <header class="fixed top-0 w-full h-16 z-40 bg-white/95 border-b border-borderSoft backdrop-blur-sm">
+        <div class="h-full flex items-center justify-between px-3 sm:px-4 lg:px-8">
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button id="hamburgerBtn" class="p-2 text-textMuted hover:text-primary transition-colors focus:outline-none rounded-lg hover:bg-bgSoft">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                        <i class="fas fa-chalkboard-user text-sm sm:text-base"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <p class="text-[13px] font-bold text-textActive leading-none">Absensi Sekolah</p>
+                        <p class="text-[11px] text-textMuted leading-tight mt-1">Portal Guru & Wali Kelas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center bg-bgSoft border border-borderSoft rounded-full px-4 py-1.5 w-72 lg:w-96 shadow-sm focus-within:border-primary transition-all">
+                <i class="fas fa-search text-slate-400 mr-3 text-xs"></i>
+                <input type="text" placeholder="Cari siswa, jadwal, atau berkas..." class="bg-transparent text-xs w-full focus:outline-none text-slate-600 placeholder-slate-400">
+                <span class="text-[10px] text-slate-400 px-2 py-0.5 rounded-full border border-borderSoft bg-white font-mono">Ctrl+F</span>
+            </div>
+
+            <div class="flex items-center space-x-1 sm:space-x-3">
+                <button id="mobileSearchBtn" class="md:hidden p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none">
+                    <i class="fas fa-search text-base"></i>
+                </button>
+
+                <!-- Notifikasi -->
+                <div class="relative">
+                    <button id="notifBtn" class="relative p-2 rounded-full bg-bgSoft text-textMuted hover:bg-slate-100 hover:text-primary transition-colors focus:outline-none">
+                        <i class="far fa-bell text-base"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-3 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 overflow-hidden">
+                        <div class="p-3.5 border-b border-borderSoft flex items-center justify-between bg-bgSoft/50">
+                            <h4 class="text-xs font-bold text-textActive">Notifikasi Wali Kelas</h4>
+                            <span class="text-[9px] bg-red-50 text-danger px-2 py-0.5 rounded-full font-semibold border border-red-100">1 Warning</span>
+                        </div>
+                        <div class="p-2 space-y-1">
+                            <a href="walikelas.html" class="flex gap-3 p-3 rounded-xl hover:bg-bgSoft transition-colors">
+                                <div class="w-8 h-8 rounded-lg bg-red-50 text-danger flex items-center justify-center shrink-0 text-xs mt-0.5">
+                                    <i class="fas fa-user-slash"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-textActive truncate">Peringatan Siswa Bolos</p>
+                                    <p class="text-[11px] text-textMuted mt-1 leading-relaxed">Doni Tata (XI MIPA 2) tidak hadir 3x bulan ini.</p>
+                                    <span class="text-[9px] text-slate-400 mt-1.5 block">Hari ini</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-6 w-[1px] bg-borderSoft hidden sm:block"></div>
+
+                <!-- Profile -->
+                <div class="relative">
+                    <button id="profileBtn" class="flex items-center space-x-2 p-1 sm:p-1.5 rounded-full hover:bg-bgSoft transition-colors focus:outline-none">
+                        <img src="https://ui-avatars.com/api/?name=Ahmad+Dahlan&background=2563EB&color=fff" alt="Profile Guru" class="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20">
+                        <div class="hidden md:block text-left pr-1">
+                            <p class="text-xs font-bold text-textActive leading-tight">Ahmad Dahlan, S.Kom</p>
+                            <p class="text-[10px] text-textMuted leading-tight mt-0.5">Guru & Wali Kelas XI MIPA 2</p>
+                        </div>
+                        <i class="fas fa-chevron-down text-[10px] text-textMuted hidden md:block pl-1"></i>
+                    </button>
+
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-3 w-52 bg-white rounded-2xl shadow-xl border border-borderSoft z-50 p-1.5">
+                        <div class="px-3 py-2 border-b border-borderSoft mb-1 md:hidden">
+                            <p class="text-xs font-bold text-textActive truncate">Ahmad Dahlan, S.Kom</p>
+                            <p class="text-[10px] text-textMuted">Guru & Wali Kelas</p>
+                        </div>
+                        <a href="profil_saya.html" class="flex items-center px-3 py-2 text-xs text-textMuted hover:bg-bgSoft hover:text-textActive rounded-lg transition-colors font-medium">
+                            <i class="fas fa-id-badge w-4 mr-2.5 text-slate-400"></i> Profil Saya
+                        </a>
+                        <div class="my-1 border-t border-borderSoft"></div>
+                        <a href="../login.html" class="flex items-center px-3 py-2 text-xs text-danger hover:bg-red-50 rounded-lg transition-colors font-semibold">
+                            <i class="fas fa-arrow-right-from-bracket w-4 mr-2.5"></i> Log Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobileSearchModal" class="fixed inset-0 bg-white z-50 p-4 hidden md:hidden flex-col">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="flex-1 flex items-center bg-bgSoft border border-borderSoft rounded-xl px-3.5 py-2.5">
+                    <i class="fas fa-search text-slate-400 mr-3 text-sm"></i>
+                    <input id="mobileSearchInput" type="text" placeholder="Cari siswa, jadwal, atau berkas..." class="bg-transparent text-sm w-full focus:outline-none">
+                </div>
+                <button id="closeSearchBtn" class="p-2 text-textMuted hover:text-danger text-sm font-semibold">Batal</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex pt-16">
+        <!-- SIDEBAR GURU -->
+        <aside id="sidebarMenu" class="fixed top-16 left-0 h-[calc(100vh-64px)] w-64 bg-white border-r border-borderSoft z-30 overflow-y-auto px-4 py-5 -translate-x-full lg:translate-x-0 shadow-lg lg:shadow-none">
+            <div class="flex items-center space-x-2.5 lg:hidden mb-5 pb-3 border-b border-borderSoft">
+                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+                    <i class="fas fa-chalkboard-user text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-textActive truncate">Ahmad Dahlan, S.Kom</p>
+                    <p class="text-[10px] text-textMuted truncate">Wali Kelas XI MIPA 2</p>
+                </div>
+            </div>
+
+            <nav class="space-y-5">
+                <div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">PANEL GURU</p>
+                    <ul class="space-y-1.5">
+                        <li>
+                            <a href="index.html" class="sidebar-item active flex items-center px-3 py-2.5 rounded-lg text-primary font-semibold text-sm bg-primarySoft">
+                                <i class="fas fa-chart-pie w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="jadwal_mengajar.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm font-medium">
+                                <i class="fas fa-calendar-check w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Jadwal Mengajar</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="walikelas.html" class="sidebar-item flex items-center justify-between px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm font-medium">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user-group w-5 text-center text-sm"></i>
+                                    <span class="ml-2.5">Wali Kelas</span>
+                                </div>
+                                <span class="bg-amber-100 text-amber-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border border-amber-200">XI MIPA 2</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="cuti_saya.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-textMuted hover:bg-bgSoft hover:text-textActive text-sm font-medium">
+                                <i class="fas fa-file-signature w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Cuti & Izin Saya</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-4 border-t border-borderSoft">
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-3">AKUN</p>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="../login.html" class="sidebar-item flex items-center px-3 py-2.5 rounded-lg text-danger hover:bg-red-50 text-sm font-medium">
+                                <i class="fas fa-arrow-right-from-bracket w-5 text-center text-sm"></i>
+                                <span class="ml-2.5">Log Out</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/40 z-20 hidden lg:hidden"></div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 w-full lg:ml-64 p-3 sm:p-5 lg:p-8 min-h-[calc(100vh-64px)] space-y-4 sm:space-y-6 overflow-x-hidden">
+            
+            <!-- BANNER GURU -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-4 sm:p-6 text-white shadow-lg shadow-blue-500/10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                    <span class="inline-block px-2.5 py-0.5 bg-white/20 text-white rounded-full text-[10px] font-semibold mb-2 backdrop-blur-md">
+                        NIP: 19881020 201504 1 002 • Wali Kelas XI MIPA 2
+                    </span>
+                    <h1 class="text-base sm:text-xl lg:text-2xl font-bold tracking-tight">Selamat Pagi, Pak Ahmad Dahlan!</h1>
+                    <p class="text-xs lg:text-sm text-blue-100 mt-1 leading-relaxed">Jadwal Aktif Hari Ini: <strong class="text-white underline">Informatika (Jam 3: 09:15 - 10:00)</strong> di kelas XI MIPA 1.</p>
+                </div>
+                <a href="#jadwalSection" class="inline-flex items-center justify-center px-4 py-2 bg-white text-primary rounded-xl font-bold text-xs shadow-md hover:bg-blue-50 transition-colors self-start md:self-auto shrink-0">
+                    <i class="fas fa-list-check mr-2"></i> Ke Jadwal & Absen Siswa
+                </a>
+            </div>
+
+            <!-- STATISTIK RINGKAS -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white p-4 rounded-2xl border border-borderSoft shadow-sm">
+                    <p class="text-[11px] font-semibold text-textMuted uppercase">Status Absen Anda</p>
+                    <h3 class="text-lg sm:text-xl font-extrabold text-emerald-600 mt-1 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Hadir
+                    </h3>
+                    <p class="text-[10px] text-slate-400 mt-1">Tercatat Admin (06:30)</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-borderSoft shadow-sm">
+                    <p class="text-[11px] font-semibold text-textMuted uppercase">Kehadiran XI MIPA 2</p>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-textActive mt-1">94%</h3>
+                    <p class="text-[10px] text-slate-400 mt-1">Hari ini: 34 / 36 Siswa</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-borderSoft shadow-sm border-l-4 border-l-danger">
+                    <p class="text-[11px] font-semibold text-textMuted uppercase">Tindakan Walas</p>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-danger mt-1">2 Siswa</h3>
+                    <p class="text-[10px] text-danger mt-1 font-semibold"><i class="fas fa-exclamation-triangle mr-1"></i> Alpa &ge; 3 Kali</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-borderSoft shadow-sm">
+                    <p class="text-[11px] font-semibold text-textMuted uppercase">Sisa Kuota Cuti</p>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-textActive mt-1">8 Hari</h3>
+                    <p class="text-[10px] text-slate-400 mt-1">Tahun Ajaran 2025/2026</p>
+                </div>
+            </div>
+
+            <!-- SECTION INTEGRASI JADWAL MENGAJAR & PRESENSI SISWA -->
+            <div id="jadwalSection" class="bg-white rounded-2xl border border-borderSoft shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-borderSoft bg-bgSoft/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-sm font-bold text-textActive flex items-center">
+                            <i class="fas fa-calendar-day text-primary mr-2"></i> Jadwal Mengajar & Presensi Kelas Hari Ini
+                        </h3>
+                        <p class="text-[11px] text-textMuted">Pilih kelas yang sedang berlangsung untuk membuka ruang presensi siswa.</p>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-primary border border-blue-200 rounded-lg self-start sm:self-auto">
+                        Senin, 24 Agustus 2026
+                    </span>
+                </div>
+
+                <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- CARD KELAS 1: SEDANG BERLANGSUNG -->
+                    <div class="p-4 rounded-xl border-2 border-primary bg-blue-50/30 flex flex-col justify-between space-y-4 relative overflow-hidden">
+                        <span class="absolute top-0 right-0 bg-primary text-white text-[9px] font-extrabold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+                            Sedang Berlangsung
+                        </span>
+                        <div>
+                            <p class="text-[11px] font-bold text-primary uppercase">Jam ke 3-4 (09:15 - 10:45)</p>
+                            <h4 class="text-base font-extrabold text-textActive mt-0.5">XI MIPA 1</h4>
+                            <p class="text-xs text-textMuted mt-0.5"><i class="fas fa-book mr-1"></i> Informatika • Ruang Lab Komputer 2</p>
+                        </div>
+                        <div class="pt-2 flex items-center gap-2 border-t border-blue-100">
+                            <a href="presensi_kelas.html?kelas=XI-MIPA-1&mode=manual" class="flex-1 bg-white hover:bg-slate-50 text-textActive border border-borderSoft text-center py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+                                <i class="fas fa-list-check mr-1.5 text-slate-500"></i> Manual (Dipanggil)
+                            </a>
+                            <a href="presensi_kelas.html?kelas=XI-MIPA-1&mode=qr" class="flex-1 bg-primary hover:bg-primaryDark text-white text-center py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20">
+                                <i class="fas fa-qrcode mr-1.5"></i> Display QR Class
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- CARD KELAS 2: MENDATANG -->
+                    <div class="p-4 rounded-xl border border-borderSoft bg-bgSoft/50 flex flex-col justify-between space-y-4">
+                        <div>
+                            <span class="text-[10px] font-bold text-textMuted bg-slate-200 px-2 py-0.5 rounded-md uppercase">Mendatang</span>
+                            <p class="text-[11px] font-bold text-textMuted uppercase mt-2">Jam ke 5-6 (10:45 - 12:00)</p>
+                            <h4 class="text-base font-bold text-textActive mt-0.5">X IPS 1</h4>
+                            <p class="text-xs text-textMuted mt-0.5"><i class="fas fa-book mr-1"></i> Informatika • Ruang X-IPS-1</p>
+                        </div>
+                        <div class="pt-2 flex items-center gap-2 border-t border-borderSoft">
+                            <button disabled class="w-full bg-slate-100 text-slate-400 py-2 rounded-xl text-xs font-semibold cursor-not-allowed">
+                                Belum Jam Pelajaran
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION MONITORING WALI KELAS -->
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-borderSoft shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-borderSoft pb-3">
+                    <h3 class="text-sm font-bold text-textActive"><i class="fas fa-shield-halved text-amber-500 mr-2"></i>Monitoring Wali Kelas (XI MIPA 2)</h3>
+                    <a href="walikelas.html" class="text-xs text-primary font-semibold hover:underline">Lihat Semua &rarr;</a>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="p-3.5 bg-red-50/60 border border-red-100 rounded-xl flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-red-100 text-danger flex items-center justify-center shrink-0 font-bold text-xs">!</div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-xs font-bold text-textActive truncate">Rizky Febrian</h4>
+                            <p class="text-[11px] text-danger font-medium mt-0.5">3 Hari Alpa Tanpa Alasan</p>
+                            <button onclick="sendWA('Rizky Febrian')" class="mt-2 text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1 rounded-lg transition-colors inline-flex items-center">
+                                <i class="fab fa-whatsapp mr-1 text-xs"></i> WA Ortu
+                            </button>
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="../assets/js/dashwalas.js"></script>
+</body>
+</html>
